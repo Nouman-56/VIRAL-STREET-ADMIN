@@ -20,13 +20,21 @@
         button { background: #e50914; border: none; color: white; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
         button:hover { opacity: 0.9; transform: scale(1.02); }
         .login-box { max-width: 400px; margin: 100px auto; text-align: center; }
-        .movie-list, .slider-list { margin-top: 15px; max-height: 400px; overflow-y: auto; }
-        .movie-item, .slider-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #3d3d3d; gap: 10px; flex-wrap: wrap; }
+        .movie-list, .slider-list { margin-top: 15px; max-height: 500px; overflow-y: auto; }
+        .movie-item, .slider-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #3d3d3d; gap: 15px; flex-wrap: wrap; background: #1a1a1a; margin-bottom: 5px; border-radius: 10px; }
+        .movie-item:hover { background: #222; }
+        .movie-info { flex: 2; min-width: 200px; }
+        .movie-info strong { color: #e50914; font-size: 16px; }
         .badges-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .badge-checkbox { display: flex; align-items: center; gap: 5px; background: #2a2a2a; padding: 5px 10px; border-radius: 6px; font-size: 12px; }
-        .badge-checkbox input { width: auto; margin: 0; cursor: pointer; }
-        .edit-btn { background: #3498db; border: none; color: white; padding: 5px 12px; border-radius: 6px; cursor: pointer; margin-right: 5px; }
-        .delete-btn { background: rgba(229,9,20,0.3); border: 1px solid #e50914; color: #e50914; padding: 5px 12px; border-radius: 6px; cursor: pointer; }
+        .badge-checkbox { display: flex; align-items: center; gap: 6px; background: #2a2a2a; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .badge-checkbox:hover { background: #3a3a3a; transform: scale(1.02); }
+        .badge-checkbox input { width: 16px; height: 16px; margin: 0; cursor: pointer; }
+        .badge-checkbox.trending { border-left: 3px solid #2ecc71; }
+        .badge-checkbox.upcoming { border-left: 3px solid #f39c12; }
+        .badge-checkbox.featured { border-left: 3px solid #e50914; }
+        .edit-btn { background: #3498db; border: none; color: white; padding: 6px 14px; border-radius: 6px; cursor: pointer; margin-right: 5px; font-size: 12px; }
+        .delete-btn { background: rgba(229,9,20,0.3); border: 1px solid #e50914; color: #e50914; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .edit-btn:hover, .delete-btn:hover { transform: scale(1.02); }
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); color: white; padding: 12px 28px; border-radius: 40px; z-index: 4000; animation: fadeInOut 2.5s ease; border-left: 4px solid #e50914; }
         @keyframes fadeInOut { 0% { opacity: 0; transform: translateX(-50%) translateY(20px); } 15% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(20px); } }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: none; align-items: center; justify-content: center; }
@@ -34,9 +42,14 @@
         .modal-content { background: #151515; border-radius: 16px; padding: 25px; width: 90%; max-width: 500px; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .close-modal { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; }
+        .close-modal:hover { color: #e50914; }
         .row { display: flex; gap: 12px; }
         .row > * { flex: 1; }
-        @media (max-width: 768px) { .row { flex-direction: column; } }
+        .badge-sample { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-left: 10px; }
+        .badge-trending { background: #2ecc71; color: white; }
+        .badge-upcoming { background: #f39c12; color: white; }
+        .badge-featured { background: #e50914; color: white; }
+        @media (max-width: 768px) { .row { flex-direction: column; } .movie-item { flex-direction: column; align-items: flex-start; } }
     </style>
 </head>
 <body>
@@ -53,7 +66,7 @@
             <h1><i class="fas fa-cog"></i> VIRAL STREET - Admin Panel</h1>
             
             <div class="admin-card">
-                <h3><i class="fas fa-plus-circle"></i> Add New Video</h3>
+                <h3><i class="fas fa-plus-circle"></i> ➕ Add New Video</h3>
                 <div class="row">
                     <input type="text" id="newTitle" placeholder="Video Title *">
                     <input type="text" id="newYear" placeholder="Year *">
@@ -72,12 +85,17 @@
             </div>
             
             <div class="admin-card">
-                <h3><i class="fas fa-tags"></i> Manage Videos (Status & Actions)</h3>
+                <h3><i class="fas fa-tags"></i> 🏷️ Manage Videos - Status & Actions</h3>
+                <p style="color: #888; font-size: 12px; margin-bottom: 15px;">
+                    <span class="badge-sample badge-trending">🔥 Trending</span> - 1st section mein dikhega |
+                    <span class="badge-sample badge-upcoming">📅 Upcoming</span> - 2nd section mein dikhega |
+                    <span class="badge-sample badge-featured">⭐ Featured</span> - Sabse pehle, border ke saath
+                </p>
                 <div id="adminVideoList" class="movie-list"></div>
             </div>
             
             <div class="admin-card">
-                <h3><i class="fas fa-images"></i> Manage Slider Images</h3>
+                <h3><i class="fas fa-images"></i> 🖼️ Manage Slider Images</h3>
                 <div class="row">
                     <input type="text" id="sliderImgUrl" placeholder="Slider Image URL">
                     <input type="text" id="sliderTitle" placeholder="Slider Title">
@@ -183,7 +201,8 @@
         
         async function updateVideoFlags(videoId, field, value) {
             await db.collection("viral_videos").doc(videoId).update({ [field]: value });
-            showToast(`✅ Video ${field} updated!`);
+            const fieldNames = { isTrending: '🔥 Trending', isUpcoming: '📅 Upcoming', isFeatured: '⭐ Featured' };
+            showToast(`✅ ${fieldNames[field]} updated!`);
         }
         
         async function deleteVideo(videoId) {
@@ -249,13 +268,20 @@
         function renderAdminVideoList() {
             const container = document.getElementById('adminVideoList');
             if (!container) return;
+            if (currentVideos.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No videos found. Add your first video!</div>';
+                return;
+            }
             container.innerHTML = currentVideos.map(v => `
                 <div class="movie-item">
-                    <div><strong>${escapeHtml(v.title)}</strong> (${v.year}) - ${v.category} | 👁️ ${formatViews(v.views||0)}</div>
+                    <div class="movie-info">
+                        <strong>${escapeHtml(v.title)}</strong> (${v.year}) - ${v.category} <br>
+                        <small style="color:#888;">👁️ ${formatViews(v.views||0)}</small>
+                    </div>
                     <div class="badges-group">
-                        <label class="badge-checkbox"><input type="checkbox" ${v.isTrending ? 'checked' : ''} onchange="updateVideoFlags('${v.id}','isTrending',this.checked)"> 🔥 Trending</label>
-                        <label class="badge-checkbox"><input type="checkbox" ${v.isUpcoming ? 'checked' : ''} onchange="updateVideoFlags('${v.id}','isUpcoming',this.checked)"> 📅 Upcoming</label>
-                        <label class="badge-checkbox"><input type="checkbox" ${v.isFeatured ? 'checked' : ''} onchange="updateVideoFlags('${v.id}','isFeatured',this.checked)"> ⭐ Featured</label>
+                        <label class="badge-checkbox trending"><input type="checkbox" ${v.isTrending ? 'checked' : ''} onchange="updateVideoFlags('${v.id}','isTrending',this.checked)"> 🔥 Trending</label>
+                        <label class="badge-checkbox upcoming"><input type="checkbox" ${v.isUpcoming ? 'checked' : ''} onchange="updateVideoFlags('${v.id}','isUpcoming',this.checked)"> 📅 Upcoming</label>
+                        <label class="badge-checkbox featured"><input type="checkbox" ${v.isFeatured ? 'checked' : ''} onchange="updateVideoFlags('${v.id}','isFeatured',this.checked)"> ⭐ Featured (1st)</label>
                         <button class="edit-btn" onclick="openEditModal('${v.id}')"><i class="fas fa-edit"></i> Edit</button>
                         <button class="delete-btn" onclick="deleteVideo('${v.id}')"><i class="fas fa-trash"></i> Delete</button>
                     </div>
@@ -266,9 +292,13 @@
         function renderAdminSliderList() {
             const container = document.getElementById('sliderListAdmin');
             if (!container) return;
+            if (currentSlides.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No sliders added. Add your first slider!</div>';
+                return;
+            }
             container.innerHTML = currentSlides.map(s => `
                 <div class="slider-item">
-                    <span><strong>${escapeHtml(s.title)}</strong></span>
+                    <span><strong>${escapeHtml(s.title)}</strong><br><small style="color:#888;">${s.imgUrl ? s.imgUrl.substring(0, 40) + '...' : ''}</small></span>
                     <button class="delete-btn" onclick="deleteSlider('${s.id}')">Delete</button>
                 </div>
             `).join('');
