@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,9 +21,9 @@
         button { background: #e50914; border: none; color: white; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
         button:hover { opacity: 0.9; transform: scale(1.02); }
         .login-box { max-width: 400px; margin: 100px auto; text-align: center; }
-        .movie-list, .slider-list { margin-top: 15px; max-height: 500px; overflow-y: auto; }
-        .movie-item, .slider-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #3d3d3d; gap: 15px; flex-wrap: wrap; background: #1a1a1a; margin-bottom: 5px; border-radius: 10px; }
-        .movie-item:hover { background: #222; }
+        .movie-list, .slider-list, .ad-links-list { margin-top: 15px; max-height: 500px; overflow-y: auto; }
+        .movie-item, .slider-item, .ad-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #3d3d3d; gap: 15px; flex-wrap: wrap; background: #1a1a1a; margin-bottom: 5px; border-radius: 10px; }
+        .movie-item:hover, .slider-item:hover, .ad-item:hover { background: #222; }
         .movie-info { flex: 2; min-width: 200px; }
         .movie-info strong { color: #e50914; font-size: 16px; }
         .badges-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -49,7 +50,24 @@
         .badge-trending { background: #2ecc71; color: white; }
         .badge-upcoming { background: #f39c12; color: white; }
         .badge-featured { background: #e50914; color: white; }
-        @media (max-width: 768px) { .row { flex-direction: column; } .movie-item { flex-direction: column; align-items: flex-start; } }
+        
+        /* Ad Links Specific Styles */
+        .ad-links-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+        .ad-link-input { background: #2a2a2a; border: 1px solid #3d3d3d; border-radius: 10px; padding: 10px 12px; color: white; font-size: 13px; }
+        .ad-link-input:focus { border-color: #e50914; outline: none; }
+        .ad-link-label { color: #e50914; font-size: 12px; margin-bottom: 5px; display: block; }
+        .single-link-mode { background: rgba(229,9,20,0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(229,9,20,0.3); }
+        .single-link-mode label { color: #FFD700; font-weight: 600; }
+        .mode-selector { display: flex; gap: 15px; margin-bottom: 20px; }
+        .mode-btn { flex: 1; background: #2a2a2a; border: 1px solid #3d3d3d; color: white; padding: 10px; border-radius: 10px; cursor: pointer; transition: all 0.3s; }
+        .mode-btn.active { background: #e50914; border-color: #e50914; }
+        .mode-btn:hover { background: #3a3a3a; }
+        
+        @media (max-width: 768px) { 
+            .row { flex-direction: column; } 
+            .movie-item { flex-direction: column; align-items: flex-start; }
+            .ad-links-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -104,6 +122,38 @@
                 <button id="addSliderBtn">+ Add Slide</button>
                 <div id="sliderListAdmin" class="slider-list"></div>
             </div>
+            
+            <!-- Ad Links Management Section -->
+            <div class="admin-card">
+                <h3><i class="fas fa-ad"></i> 📢 Manage Ad Links (10 Buttons)</h3>
+                <p style="color: #888; font-size: 12px; margin-bottom: 15px;">
+                    Users will see 10 buttons on frontend. Each button click opens an ad and gives 3 coins after 10 seconds.
+                </p>
+                
+                <div class="mode-selector">
+                    <button class="mode-btn" id="singleModeBtn" onclick="switchMode('single')">🔗 Single Link Mode</button>
+                    <button class="mode-btn" id="multiModeBtn" onclick="switchMode('multi')">📋 Multiple Links Mode</button>
+                </div>
+                
+                <div id="singleLinkMode" class="single-link-mode">
+                    <label><i class="fas fa-link"></i> Single Link (Auto-fill all 10 buttons)</label>
+                    <input type="text" id="singleAdLink" class="auth-input" placeholder="Enter one ad link to apply to all 10 buttons" style="margin-top: 10px;">
+                    <button id="applySingleLinkBtn" style="margin-top: 10px; background: #3498db;">Apply to All 10 Buttons</button>
+                </div>
+                
+                <div id="multiLinkMode" style="display: none;">
+                    <label><i class="fas fa-list"></i> Individual Links for Each Button</label>
+                    <div class="ad-links-grid" id="adLinksGrid">
+                        <!-- 10 input fields will be generated here -->
+                    </div>
+                    <button id="saveMultiLinksBtn">💾 Save All Links</button>
+                </div>
+                
+                <div id="adLinksList" class="ad-links-list" style="margin-top: 20px;">
+                    <h4 style="margin-bottom: 10px;">📋 Current Ad Links Status</h4>
+                    <div id="currentLinksList"></div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -145,6 +195,8 @@
         const db = firebase.firestore();
         
         let currentVideos = [], currentSlides = [], isAdminLoggedIn = false;
+        let currentAdLinks = [];
+        let currentMode = 'single'; // 'single' or 'multi'
         
         function showToast(msg, isError = false) {
             const toast = document.createElement('div');
@@ -157,6 +209,117 @@
         
         function escapeHtml(text) { if (!text) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
         function formatViews(views) { if (!views) return "0 views"; if (views >= 1e6) return (views/1e6).toFixed(1)+"M"; if (views >= 1e3) return (views/1e3).toFixed(1)+"K"; return views+" views"; }
+        
+        // Ad Links Functions
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('singleLinkMode').style.display = mode === 'single' ? 'block' : 'none';
+            document.getElementById('multiLinkMode').style.display = mode === 'multi' ? 'block' : 'none';
+            
+            document.getElementById('singleModeBtn').classList.toggle('active', mode === 'single');
+            document.getElementById('multiModeBtn').classList.toggle('active', mode === 'multi');
+            
+            if (mode === 'multi') {
+                renderMultiLinkInputs();
+            }
+        }
+        
+        function renderMultiLinkInputs() {
+            const container = document.getElementById('adLinksGrid');
+            container.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const value = currentAdLinks[i] || '';
+                container.innerHTML += `
+                    <div>
+                        <label class="ad-link-label">Button ${i}</label>
+                        <input type="text" id="adLink_${i}" class="ad-link-input" placeholder="Ad link for button ${i}" value="${escapeHtml(value)}">
+                    </div>
+                `;
+            }
+        }
+        
+        async function loadAdLinks() {
+            const docRef = db.collection("settings").doc("adLinks");
+            const doc = await docRef.get();
+            if (doc.exists) {
+                currentAdLinks = doc.data().links || {};
+                currentMode = doc.data().mode || 'single';
+            } else {
+                // Default ad link
+                const defaultLink = "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
+                currentAdLinks = {};
+                for (let i = 1; i <= 10; i++) {
+                    currentAdLinks[i] = defaultLink;
+                }
+                currentMode = 'single';
+                await docRef.set({ links: currentAdLinks, mode: currentMode });
+            }
+            
+            // Update UI
+            document.getElementById('singleAdLink').value = currentAdLinks[1] || '';
+            switchMode(currentMode);
+            updateCurrentLinksList();
+        }
+        
+        async function saveSingleLink() {
+            const singleLink = document.getElementById('singleAdLink').value.trim();
+            if (!singleLink) {
+                showToast('Please enter a valid link!', true);
+                return;
+            }
+            
+            // Apply same link to all 10 buttons
+            const newLinks = {};
+            for (let i = 1; i <= 10; i++) {
+                newLinks[i] = singleLink;
+            }
+            
+            await db.collection("settings").doc("adLinks").set({ links: newLinks, mode: 'single' });
+            currentAdLinks = newLinks;
+            currentMode = 'single';
+            showToast(`✅ Single link applied to all 10 buttons!`);
+            updateCurrentLinksList();
+        }
+        
+        async function saveMultiLinks() {
+            const newLinks = {};
+            let allFilled = true;
+            
+            for (let i = 1; i <= 10; i++) {
+                const link = document.getElementById(`adLink_${i}`).value.trim();
+                if (!link) {
+                    allFilled = false;
+                    showToast(`Please fill link for button ${i}!`, true);
+                    return;
+                }
+                newLinks[i] = link;
+            }
+            
+            await db.collection("settings").doc("adLinks").set({ links: newLinks, mode: 'multi' });
+            currentAdLinks = newLinks;
+            currentMode = 'multi';
+            showToast(`✅ All 10 links saved successfully!`);
+            updateCurrentLinksList();
+        }
+        
+        function updateCurrentLinksList() {
+            const container = document.getElementById('currentLinksList');
+            if (!container) return;
+            
+            let html = '<div style="max-height: 200px; overflow-y: auto;">';
+            for (let i = 1; i <= 10; i++) {
+                const link = currentAdLinks[i] || 'Not set';
+                const shortLink = link.length > 50 ? link.substring(0, 50) + '...' : link;
+                html += `
+                    <div style="padding: 8px; border-bottom: 1px solid #333; font-size: 12px;">
+                        <strong style="color: #e50914;">Button ${i}:</strong> 
+                        <span style="color: #888; word-break: break-all;">${escapeHtml(shortLink)}</span>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
         
         function attachListeners() {
             db.collection("viral_videos").orderBy("createdAt", "desc").onSnapshot(snapshot => {
@@ -304,12 +467,13 @@
             `).join('');
         }
         
-        function login() {
+        async function login() {
             const password = document.getElementById('adminPassword').value;
             if (password === 'admin123') {
                 isAdminLoggedIn = true;
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('adminSection').style.display = 'block';
+                await loadAdLinks();
                 attachListeners();
                 showToast('✅ Admin access granted!');
             } else {
@@ -317,17 +481,22 @@
             }
         }
         
+        // Event Listeners
         document.getElementById('loginBtn').addEventListener('click', login);
         document.getElementById('addVideoBtn').addEventListener('click', addVideo);
         document.getElementById('addSliderBtn').addEventListener('click', addSlider);
         document.getElementById('saveEditBtn').addEventListener('click', saveEditedVideo);
         document.getElementById('adminPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
+        document.getElementById('applySingleLinkBtn').addEventListener('click', saveSingleLink);
+        document.getElementById('saveMultiLinksBtn').addEventListener('click', saveMultiLinks);
         
         window.updateVideoFlags = updateVideoFlags;
         window.deleteVideo = deleteVideo;
         window.openEditModal = openEditModal;
         window.deleteSlider = deleteSlider;
         window.closeEditModal = closeEditModal;
+        window.switchMode = switchMode;
     </script>
 </body>
 </html>
+```
