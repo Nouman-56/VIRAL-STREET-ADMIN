@@ -153,6 +153,20 @@
                     <div id="currentLinksList"></div>
                 </div>
             </div>
+            
+            <!-- Membership Button URL Management Section -->
+            <div class="admin-card">
+                <h3><i class="fas fa-crown"></i> 👑 Membership Button URL</h3>
+                <p style="color: #888; font-size: 12px; margin-bottom: 15px;">
+                    Ye URL "Join Membership" button par click karne par khulega. Frontend par real-time update hoga.
+                </p>
+                <input type="text" id="membershipUrl" placeholder="Enter Membership URL (e.g., https://example.com/membership)" style="width: 100%;">
+                <button id="saveMembershipUrlBtn" style="margin-top: 5px; background: #e50914;">💾 Save Membership URL</button>
+                <div id="currentMembershipUrl" style="margin-top: 15px; padding: 12px; background: #2a2a2a; border-radius: 10px;">
+                    <small style="color: #888;">Current URL: </small>
+                    <span id="currentMembershipUrlDisplay" style="color: #FFD700; word-break: break-all;">Not set</span>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -196,6 +210,7 @@
         let currentVideos = [], currentSlides = [], isAdminLoggedIn = false;
         let currentAdLinks = [];
         let currentMode = 'single'; // 'single' or 'multi'
+        let currentMembershipUrl = "";
         
         function showToast(msg, isError = false) {
             const toast = document.createElement('div');
@@ -208,6 +223,32 @@
         
         function escapeHtml(text) { if (!text) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
         function formatViews(views) { if (!views) return "0 views"; if (views >= 1e6) return (views/1e6).toFixed(1)+"M"; if (views >= 1e3) return (views/1e3).toFixed(1)+"K"; return views+" views"; }
+        
+        // Membership URL Functions
+        async function loadMembershipUrl() {
+            const docRef = db.collection("settings").doc("membership");
+            const doc = await docRef.get();
+            if (doc.exists) {
+                currentMembershipUrl = doc.data().url || "";
+            } else {
+                currentMembershipUrl = "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
+                await docRef.set({ url: currentMembershipUrl });
+            }
+            document.getElementById('membershipUrl').value = currentMembershipUrl;
+            document.getElementById('currentMembershipUrlDisplay').textContent = currentMembershipUrl;
+        }
+        
+        async function saveMembershipUrl() {
+            const url = document.getElementById('membershipUrl').value.trim();
+            if (!url) {
+                showToast('Please enter a valid URL!', true);
+                return;
+            }
+            await db.collection("settings").doc("membership").set({ url: url });
+            currentMembershipUrl = url;
+            document.getElementById('currentMembershipUrlDisplay').textContent = url;
+            showToast('✅ Membership URL saved! Frontend will update automatically.');
+        }
         
         // Ad Links Functions
         function switchMode(mode) {
@@ -473,6 +514,7 @@
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('adminSection').style.display = 'block';
                 await loadAdLinks();
+                await loadMembershipUrl();
                 attachListeners();
                 showToast('✅ Admin access granted!');
             } else {
@@ -488,6 +530,7 @@
         document.getElementById('adminPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
         document.getElementById('applySingleLinkBtn').addEventListener('click', saveSingleLink);
         document.getElementById('saveMultiLinksBtn').addEventListener('click', saveMultiLinks);
+        document.getElementById('saveMembershipUrlBtn').addEventListener('click', saveMembershipUrl);
         
         window.updateVideoFlags = updateVideoFlags;
         window.deleteVideo = deleteVideo;
@@ -498,4 +541,3 @@
     </script>
 </body>
 </html>
-```
