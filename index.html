@@ -20,9 +20,9 @@
         button { background: #e50914; border: none; color: white; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
         button:hover { opacity: 0.9; transform: scale(1.02); }
         .login-box { max-width: 400px; margin: 100px auto; text-align: center; }
-        .movie-list, .slider-list, .ad-links-list { margin-top: 15px; max-height: 500px; overflow-y: auto; }
-        .movie-item, .slider-item, .ad-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #3d3d3d; gap: 15px; flex-wrap: wrap; background: #1a1a1a; margin-bottom: 5px; border-radius: 10px; }
-        .movie-item:hover, .slider-item:hover, .ad-item:hover { background: #222; }
+        .movie-list, .slider-list, .ad-links-list, .users-list { margin-top: 15px; max-height: 500px; overflow-y: auto; }
+        .movie-item, .slider-item, .ad-item, .user-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #3d3d3d; gap: 15px; flex-wrap: wrap; background: #1a1a1a; margin-bottom: 5px; border-radius: 10px; }
+        .movie-item:hover, .slider-item:hover, .ad-item:hover, .user-item:hover { background: #222; }
         .movie-info { flex: 2; min-width: 200px; }
         .movie-info strong { color: #e50914; font-size: 16px; }
         .badges-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -34,7 +34,9 @@
         .badge-checkbox.featured { border-left: 3px solid #e50914; }
         .edit-btn { background: #3498db; border: none; color: white; padding: 6px 14px; border-radius: 6px; cursor: pointer; margin-right: 5px; font-size: 12px; }
         .delete-btn { background: rgba(229,9,20,0.3); border: 1px solid #e50914; color: #e50914; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }
-        .edit-btn:hover, .delete-btn:hover { transform: scale(1.02); }
+        .activate-membership-btn { background: #2ecc71; border: none; color: white; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-right: 5px; }
+        .deactivate-membership-btn { background: rgba(229,9,20,0.3); border: 1px solid #e50914; color: #e50914; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .edit-btn:hover, .delete-btn:hover, .activate-membership-btn:hover, .deactivate-membership-btn:hover { transform: scale(1.02); }
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.95); color: white; padding: 12px 28px; border-radius: 40px; z-index: 4000; animation: fadeInOut 2.5s ease; border-left: 4px solid #e50914; }
         @keyframes fadeInOut { 0% { opacity: 0; transform: translateX(-50%) translateY(20px); } 15% { opacity: 1; transform: translateX(-50%) translateY(0); } 85% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(20px); } }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: none; align-items: center; justify-content: center; }
@@ -49,6 +51,13 @@
         .badge-trending { background: #2ecc71; color: white; }
         .badge-upcoming { background: #f39c12; color: white; }
         .badge-featured { background: #e50914; color: white; }
+        
+        /* Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .stat-card { background: linear-gradient(135deg, #1a1a1a, #0d0d0d); border-radius: 16px; padding: 20px; text-align: center; border: 1px solid rgba(229,9,20,0.3); }
+        .stat-card i { font-size: 36px; color: #e50914; margin-bottom: 10px; }
+        .stat-card .stat-number { font-size: 32px; font-weight: 800; color: #FFD700; }
+        .stat-card .stat-label { font-size: 14px; color: #888; margin-top: 5px; }
         
         /* Ad Links Specific Styles */
         .ad-links-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
@@ -66,6 +75,7 @@
             .row { flex-direction: column; } 
             .movie-item { flex-direction: column; align-items: flex-start; }
             .ad-links-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -81,6 +91,44 @@
         
         <div id="adminSection" style="display: none;">
             <h1><i class="fas fa-cog"></i> VIRAL STREET - Admin Panel</h1>
+            
+            <!-- Stats Dashboard -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <div class="stat-number" id="totalUsers">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-user-check"></i>
+                    <div class="stat-number" id="activeUsers">0</div>
+                    <div class="stat-label">Active Users (Today)</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-chart-line"></i>
+                    <div class="stat-number" id="totalAdClicks">0</div>
+                    <div class="stat-label">Total Ad Clicks</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-crown"></i>
+                    <div class="stat-number" id="activeMemberships">0</div>
+                    <div class="stat-label">Active Memberships</div>
+                </div>
+            </div>
+            
+            <!-- Manage Users Section -->
+            <div class="admin-card">
+                <h3><i class="fas fa-users-gear"></i> 👥 Manage Users</h3>
+                <p style="color: #888; font-size: 12px; margin-bottom: 15px;">
+                    View all users, manage memberships, and track user activity.
+                </p>
+                <div class="row">
+                    <input type="text" id="searchUserInput" placeholder="Search by username or email...">
+                    <button id="searchUserBtn" style="background: #3498db;">🔍 Search</button>
+                    <button id="refreshUsersBtn" style="background: #2ecc71;">🔄 Refresh</button>
+                </div>
+                <div id="usersList" class="users-list"></div>
+            </div>
             
             <div class="admin-card">
                 <h3><i class="fas fa-plus-circle"></i> ➕ Add New Video</h3>
@@ -209,8 +257,9 @@
         
         let currentVideos = [], currentSlides = [], isAdminLoggedIn = false;
         let currentAdLinks = [];
-        let currentMode = 'single'; // 'single' or 'multi'
+        let currentMode = 'single';
         let currentMembershipUrl = "";
+        let allUsers = [];
         
         function showToast(msg, isError = false) {
             const toast = document.createElement('div');
@@ -223,6 +272,127 @@
         
         function escapeHtml(text) { if (!text) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
         function formatViews(views) { if (!views) return "0 views"; if (views >= 1e6) return (views/1e6).toFixed(1)+"M"; if (views >= 1e3) return (views/1e3).toFixed(1)+"K"; return views+" views"; }
+        
+        // Format date
+        function formatDate(date) {
+            if (!date) return 'N/A';
+            const d = new Date(date);
+            return d.toLocaleDateString();
+        }
+        
+        // Load all users and update stats
+        async function loadUsers() {
+            const snapshot = await db.collection("users").get();
+            allUsers = [];
+            snapshot.forEach(doc => {
+                allUsers.push({ id: doc.id, ...doc.data() });
+            });
+            updateStats();
+            renderUsersList();
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const totalUsers = allUsers.length;
+            const activeMemberships = allUsers.filter(u => u.membershipActive === true).length;
+            
+            // Calculate total ad clicks (from localStorage simulation - stored in user document)
+            let totalAdClicks = 0;
+            allUsers.forEach(user => {
+                totalAdClicks += (user.adClicks || 0);
+            });
+            
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('activeMemberships').textContent = activeMemberships;
+            document.getElementById('totalAdClicks').textContent = totalAdClicks;
+            
+            // Active users today (users who logged in today - we'll use lastLogin field)
+            const today = new Date().toDateString();
+            const activeToday = allUsers.filter(u => {
+                if (u.lastLogin) {
+                    const lastLoginDate = new Date(u.lastLogin).toDateString();
+                    return lastLoginDate === today;
+                }
+                return false;
+            }).length;
+            document.getElementById('activeUsers').textContent = activeToday;
+        }
+        
+        // Render users list
+        function renderUsersList(searchTerm = '') {
+            const container = document.getElementById('usersList');
+            if (!container) return;
+            
+            let filteredUsers = [...allUsers];
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                filteredUsers = filteredUsers.filter(u => 
+                    (u.username && u.username.toLowerCase().includes(term)) || 
+                    (u.email && u.email.toLowerCase().includes(term))
+                );
+            }
+            
+            if (filteredUsers.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No users found</div>';
+                return;
+            }
+            
+            container.innerHTML = filteredUsers.map(user => {
+                const membershipActive = user.membershipActive || false;
+                const membershipExpiry = user.membershipExpiresAt ? new Date(user.membershipExpiresAt).toLocaleDateString() : 'Not active';
+                const adClicks = user.adClicks || 0;
+                const coins = user.coins || 0;
+                const createdAt = user.createdAt ? new Date(user.createdAt.toDate()).toLocaleDateString() : 'N/A';
+                const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'N/A';
+                
+                return `
+                    <div class="user-item">
+                        <div style="flex: 2;">
+                            <strong style="color: #e50914;">${escapeHtml(user.username)}</strong><br>
+                            <small style="color: #888;">Email: ${escapeHtml(user.email || 'N/A')}</small><br>
+                            <small style="color: #888;">Coins: ${coins} | Ad Clicks: ${adClicks}</small><br>
+                            <small style="color: #888;">Joined: ${createdAt} | Last Login: ${lastLogin}</small><br>
+                            <small style="color: ${membershipActive ? '#2ecc71' : '#888'};">Membership: ${membershipActive ? 'Active (Expires: ' + membershipExpiry + ')' : 'Inactive'}</small>
+                        </div>
+                        <div class="badges-group">
+                            ${!membershipActive ? 
+                                `<button class="activate-membership-btn" onclick="activateMembership('${user.id}', '${escapeHtml(user.username)}')"><i class="fas fa-crown"></i> Give 1 Month Membership</button>` : 
+                                `<button class="deactivate-membership-btn" onclick="deactivateMembership('${user.id}', '${escapeHtml(user.username)}')"><i class="fas fa-ban"></i> Remove Membership</button>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Activate membership for user (1 month)
+        async function activateMembership(userId, username) {
+            const expiryDate = new Date();
+            expiryDate.setMonth(expiryDate.getMonth() + 1);
+            
+            await db.collection("users").doc(userId).update({
+                membershipActive: true,
+                membershipExpiresAt: expiryDate.toISOString()
+            });
+            showToast(`✅ 1 Month membership activated for ${username}!`);
+            await loadUsers();
+        }
+        
+        // Deactivate membership
+        async function deactivateMembership(userId, username) {
+            await db.collection("users").doc(userId).update({
+                membershipActive: false,
+                membershipExpiresAt: null
+            });
+            showToast(`❌ Membership deactivated for ${username}`);
+            await loadUsers();
+        }
+        
+        // Search users
+        function searchUsers() {
+            const searchTerm = document.getElementById('searchUserInput').value.trim();
+            renderUsersList(searchTerm);
+        }
         
         // Membership URL Functions
         async function loadMembershipUrl() {
@@ -285,7 +455,6 @@
                 currentAdLinks = doc.data().links || {};
                 currentMode = doc.data().mode || 'single';
             } else {
-                // Default ad link
                 const defaultLink = "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
                 currentAdLinks = {};
                 for (let i = 1; i <= 10; i++) {
@@ -295,7 +464,6 @@
                 await docRef.set({ links: currentAdLinks, mode: currentMode });
             }
             
-            // Update UI
             document.getElementById('singleAdLink').value = currentAdLinks[1] || '';
             switchMode(currentMode);
             updateCurrentLinksList();
@@ -308,7 +476,6 @@
                 return;
             }
             
-            // Apply same link to all 10 buttons
             const newLinks = {};
             for (let i = 1; i <= 10; i++) {
                 newLinks[i] = singleLink;
@@ -323,12 +490,9 @@
         
         async function saveMultiLinks() {
             const newLinks = {};
-            let allFilled = true;
-            
             for (let i = 1; i <= 10; i++) {
                 const link = document.getElementById(`adLink_${i}`).value.trim();
                 if (!link) {
-                    allFilled = false;
                     showToast(`Please fill link for button ${i}!`, true);
                     return;
                 }
@@ -515,8 +679,14 @@
                 document.getElementById('adminSection').style.display = 'block';
                 await loadAdLinks();
                 await loadMembershipUrl();
+                await loadUsers();
                 attachListeners();
                 showToast('✅ Admin access granted!');
+                
+                // Refresh users every 30 seconds
+                setInterval(async () => {
+                    await loadUsers();
+                }, 30000);
             } else {
                 showToast('❌ Wrong password! (Use: admin123)', true);
             }
@@ -531,6 +701,9 @@
         document.getElementById('applySingleLinkBtn').addEventListener('click', saveSingleLink);
         document.getElementById('saveMultiLinksBtn').addEventListener('click', saveMultiLinks);
         document.getElementById('saveMembershipUrlBtn').addEventListener('click', saveMembershipUrl);
+        document.getElementById('searchUserBtn').addEventListener('click', searchUsers);
+        document.getElementById('refreshUsersBtn').addEventListener('click', () => loadUsers());
+        document.getElementById('searchUserInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') searchUsers(); });
         
         window.updateVideoFlags = updateVideoFlags;
         window.deleteVideo = deleteVideo;
@@ -538,6 +711,8 @@
         window.deleteSlider = deleteSlider;
         window.closeEditModal = closeEditModal;
         window.switchMode = switchMode;
+        window.activateMembership = activateMembership;
+        window.deactivateMembership = deactivateMembership;
     </script>
 </body>
 </html>
