@@ -273,22 +273,52 @@
         function escapeHtml(text) { if (!text) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
         function formatViews(views) { if (!views) return "0 views"; if (views >= 1e6) return (views/1e6).toFixed(1)+"M"; if (views >= 1e3) return (views/1e3).toFixed(1)+"K"; return views+" views"; }
         
-        // Format date
+        // Format date safely - FIXED: Handles Firestore Timestamp correctly
         function formatDate(date) {
             if (!date) return 'N/A';
-            const d = new Date(date);
-            return d.toLocaleDateString();
+            try {
+                // Handle Firestore Timestamp
+                let dateObj;
+                if (date && typeof date.toDate === 'function') {
+                    dateObj = date.toDate();
+                } else if (date && date.seconds) {
+                    dateObj = new Date(date.seconds * 1000);
+                } else if (date && typeof date === 'string') {
+                    dateObj = new Date(date);
+                } else if (date instanceof Date) {
+                    dateObj = date;
+                } else {
+                    return 'N/A';
+                }
+                // Check if valid date
+                if (isNaN(dateObj.getTime())) return 'N/A';
+                return dateObj.toLocaleDateString();
+            } catch (e) {
+                return 'N/A';
+            }
         }
         
         // Load all users and update stats
         async function loadUsers() {
-            const snapshot = await db.collection("users").get();
-            allUsers = [];
-            snapshot.forEach(doc => {
-                allUsers.push({ id: doc.id, ...doc.data() });
-            });
-            updateStats();
-            renderUsersList();
+            try {
+                const snapshot = await db.collection("users").get();
+                allUsers = [];
+                snapshot.forEach(doc => {
+                    const userData = doc.data();
+                    allUsers.push({ 
+                        id: doc.id, 
+                        ...userData,
+                        // Ensure lastLogin is properly formatted
+                        lastLogin: userData.lastLogin || null,
+                        createdAt: userData.createdAt || null
+                    });
+                });
+                updateStats();
+                renderUsersList();
+            } catch (error) {
+                console.error("Error loading users:", error);
+                showToast("Error loading users", true);
+            }
         }
         
         // Update statistics
@@ -296,7 +326,7 @@
             const totalUsers = allUsers.length;
             const activeMemberships = allUsers.filter(u => u.membershipActive === true).length;
             
-            // Calculate total ad clicks (from localStorage simulation - stored in user document)
+            // Calculate total ad clicks
             let totalAdClicks = 0;
             allUsers.forEach(user => {
                 totalAdClicks += (user.adClicks || 0);
@@ -306,12 +336,24 @@
             document.getElementById('activeMemberships').textContent = activeMemberships;
             document.getElementById('totalAdClicks').textContent = totalAdClicks;
             
-            // Active users today (users who logged in today - we'll use lastLogin field)
-            const today = new Date().toDateString();
+            // Active users today - FIXED: Proper date comparison
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
             const activeToday = allUsers.filter(u => {
                 if (u.lastLogin) {
-                    const lastLoginDate = new Date(u.lastLogin).toDateString();
-                    return lastLoginDate === today;
+                    let loginDate;
+                    if (u.lastLogin && typeof u.lastLogin.toDate === 'function') {
+                        loginDate = u.lastLogin.toDate();
+                    } else if (u.lastLogin && u.lastLogin.seconds) {
+                        loginDate = new Date(u.lastLogin.seconds * 1000);
+                    } else if (u.lastLogin && typeof u.lastLogin === 'string') {
+                        loginDate = new Date(u.lastLogin);
+                    } else {
+                        return false;
+                    }
+                    loginDate.setHours(0, 0, 0, 0);
+                    return loginDate.getTime() === today.getTime();
                 }
                 return false;
             }).length;
@@ -339,11 +381,28 @@
             
             container.innerHTML = filteredUsers.map(user => {
                 const membershipActive = user.membershipActive || false;
-                const membershipExpiry = user.membershipExpiresAt ? new Date(user.membershipExpiresAt).toLocaleDateString() : 'Not active';
+                let membershipExpiry = 'Not active';
+                if (user.membershipExpiresAt) {
+                    try {
+                        let expiryDate;
+                        if (typeof user.membershipExpiresAt === 'string') {
+                            expiryDate = new Date(user.membershipExpiresAt);
+                        } else if (user.membershipExpiresAt && typeof user.membershipExpiresAt.toDate === 'function') {
+                            expiryDate = user.membershipExpiresAt.toDate();
+                        } else {
+                            expiryDate = new Date(user.membershipExpiresAt);
+                        }
+                        if (!isNaN(expiryDate.getTime())) {
+                            membershipExpiry = expiryDate.toLocaleDateString();
+                        }
+                    } catch(e) {
+                        membershipExpiry = 'Invalid date';
+                    }
+                }
                 const adClicks = user.adClicks || 0;
                 const coins = user.coins || 0;
-                const createdAt = user.createdAt ? new Date(user.createdAt.toDate()).toLocaleDateString() : 'N/A';
-                const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'N/A';
+                const createdAt = formatDate(user.createdAt);
+                const lastLogin = formatDate(user.lastLogin);
                 
                 return `
                     <div class="user-item">
@@ -365,27 +424,41 @@
             }).join('');
         }
         
-        // Activate membership for user (1 month)
+        // Activate membership for user (1 month) - FIXED: Proper expiry date with better error handling
         async function activateMembership(userId, username) {
-            const expiryDate = new Date();
-            expiryDate.setMonth(expiryDate.getMonth() + 1);
-            
-            await db.collection("users").doc(userId).update({
-                membershipActive: true,
-                membershipExpiresAt: expiryDate.toISOString()
-            });
-            showToast(`✅ 1 Month membership activated for ${username}!`);
-            await loadUsers();
+            try {
+                const expiryDate = new Date();
+                expiryDate.setMonth(expiryDate.getMonth() + 1);
+                expiryDate.setHours(23, 59, 59, 999);
+                
+                console.log("Activating membership for:", userId, "Expires:", expiryDate.toISOString());
+                
+                await db.collection("users").doc(userId).update({
+                    membershipActive: true,
+                    membershipExpiresAt: expiryDate.toISOString()
+                });
+                
+                showToast(`✅ 1 Month membership activated for ${username}! Expires on ${expiryDate.toLocaleDateString()}`);
+                await loadUsers();
+            } catch (error) {
+                console.error("Activation error:", error);
+                showToast(`❌ Failed to activate membership: ${error.message}`, true);
+            }
         }
         
         // Deactivate membership
         async function deactivateMembership(userId, username) {
-            await db.collection("users").doc(userId).update({
-                membershipActive: false,
-                membershipExpiresAt: null
-            });
-            showToast(`❌ Membership deactivated for ${username}`);
-            await loadUsers();
+            try {
+                await db.collection("users").doc(userId).update({
+                    membershipActive: false,
+                    membershipExpiresAt: null
+                });
+                showToast(`❌ Membership deactivated for ${username}`);
+                await loadUsers();
+            } catch (error) {
+                console.error("Deactivation error:", error);
+                showToast(`❌ Failed to deactivate membership: ${error.message}`, true);
+            }
         }
         
         // Search users
@@ -396,16 +469,20 @@
         
         // Membership URL Functions
         async function loadMembershipUrl() {
-            const docRef = db.collection("settings").doc("membership");
-            const doc = await docRef.get();
-            if (doc.exists) {
-                currentMembershipUrl = doc.data().url || "";
-            } else {
-                currentMembershipUrl = "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
-                await docRef.set({ url: currentMembershipUrl });
+            try {
+                const docRef = db.collection("settings").doc("membership");
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    currentMembershipUrl = doc.data().url || "";
+                } else {
+                    currentMembershipUrl = "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
+                    await docRef.set({ url: currentMembershipUrl });
+                }
+                document.getElementById('membershipUrl').value = currentMembershipUrl;
+                document.getElementById('currentMembershipUrlDisplay').textContent = currentMembershipUrl;
+            } catch (error) {
+                console.error("Error loading membership URL:", error);
             }
-            document.getElementById('membershipUrl').value = currentMembershipUrl;
-            document.getElementById('currentMembershipUrlDisplay').textContent = currentMembershipUrl;
         }
         
         async function saveMembershipUrl() {
@@ -414,10 +491,14 @@
                 showToast('Please enter a valid URL!', true);
                 return;
             }
-            await db.collection("settings").doc("membership").set({ url: url });
-            currentMembershipUrl = url;
-            document.getElementById('currentMembershipUrlDisplay').textContent = url;
-            showToast('✅ Membership URL saved! Frontend will update automatically.');
+            try {
+                await db.collection("settings").doc("membership").set({ url: url });
+                currentMembershipUrl = url;
+                document.getElementById('currentMembershipUrlDisplay').textContent = url;
+                showToast('✅ Membership URL saved! Frontend will update automatically.');
+            } catch (error) {
+                showToast('Error saving URL: ' + error.message, true);
+            }
         }
         
         // Ad Links Functions
@@ -449,24 +530,28 @@
         }
         
         async function loadAdLinks() {
-            const docRef = db.collection("settings").doc("adLinks");
-            const doc = await docRef.get();
-            if (doc.exists) {
-                currentAdLinks = doc.data().links || {};
-                currentMode = doc.data().mode || 'single';
-            } else {
-                const defaultLink = "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
-                currentAdLinks = {};
-                for (let i = 1; i <= 10; i++) {
-                    currentAdLinks[i] = defaultLink;
+            try {
+                const docRef = db.collection("settings").doc("adLinks");
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    currentAdLinks = doc.data().links || {};
+                    currentMode = doc.data().mode || 'single';
+                } else {
+                    const defaultLink = "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
+                    currentAdLinks = {};
+                    for (let i = 1; i <= 10; i++) {
+                        currentAdLinks[i] = defaultLink;
+                    }
+                    currentMode = 'single';
+                    await docRef.set({ links: currentAdLinks, mode: currentMode });
                 }
-                currentMode = 'single';
-                await docRef.set({ links: currentAdLinks, mode: currentMode });
+                
+                document.getElementById('singleAdLink').value = currentAdLinks[1] || '';
+                switchMode(currentMode);
+                updateCurrentLinksList();
+            } catch (error) {
+                console.error("Error loading ad links:", error);
             }
-            
-            document.getElementById('singleAdLink').value = currentAdLinks[1] || '';
-            switchMode(currentMode);
-            updateCurrentLinksList();
         }
         
         async function saveSingleLink() {
