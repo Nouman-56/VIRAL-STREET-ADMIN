@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -76,6 +77,7 @@
         .current-note-message { color: #ccc; font-size: 13px; }
         .empty-note { color: #888; font-style: italic; }
         
+        /* Footer Styles */
         .admin-footer {
             text-align: center;
             padding: 25px 20px;
@@ -84,8 +86,15 @@
             color: #888;
             font-size: 14px;
         }
-        .admin-footer .copyright { color: #e50914; font-weight: 600; letter-spacing: 1px; }
-        .admin-footer .rights { margin-top: 5px; font-size: 12px; }
+        .admin-footer .copyright {
+            color: #e50914;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .admin-footer .rights {
+            margin-top: 5px;
+            font-size: 12px;
+        }
         
         @media (max-width: 768px) { 
             .row { flex-direction: column; } 
@@ -113,29 +122,52 @@
         <div id="adminSection" style="display: none;">
             <h1><i class="fas fa-cog"></i> VIRAL STREET - Admin Panel</h1>
             
+            <!-- Stats Dashboard -->
             <div class="stats-grid" id="statsGrid">
-                <div class="stat-card"><i class="fas fa-users"></i><div class="stat-number" id="totalUsers">0</div><div class="stat-label">Total Users</div></div>
-                <div class="stat-card"><i class="fas fa-user-check"></i><div class="stat-number" id="activeUsers">0</div><div class="stat-label">Active Users (Today)</div></div>
-                <div class="stat-card"><i class="fas fa-chart-line"></i><div class="stat-number" id="totalAdClicks">0</div><div class="stat-label">Total Ad Clicks</div></div>
-                <div class="stat-card"><i class="fas fa-crown"></i><div class="stat-number" id="activeMemberships">0</div><div class="stat-label">Active Memberships</div></div>
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <div class="stat-number" id="totalUsers">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-user-check"></i>
+                    <div class="stat-number" id="activeUsers">0</div>
+                    <div class="stat-label">Active Users (Today)</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-chart-line"></i>
+                    <div class="stat-number" id="totalAdClicks">0</div>
+                    <div class="stat-label">Total Ad Clicks</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-crown"></i>
+                    <div class="stat-number" id="activeMemberships">0</div>
+                    <div class="stat-label">Active Memberships</div>
+                </div>
             </div>
             
-            <!-- POPUP NOTE (Firebase) -->
+            <!-- POPUP NOTE MANAGER SECTION -->
             <div class="admin-card">
                 <h3><i class="fas fa-bell"></i> 📢 Popup Notification Manager</h3>
+                <p style="color: #888; font-size: 12px; margin-bottom: 15px;">
+                    Users will see this popup when they visit the site. Click "Remove Note" to stop showing.
+                </p>
+                
                 <div id="currentNoteDisplay" class="current-note-display">
                     <div class="current-note-title"><i class="fas fa-bell"></i> Current Active Note:</div>
                     <div id="currentNoteStatus" class="empty-note">No active note</div>
                 </div>
-                <input type="text" id="popupNoteTitle" placeholder="Popup Title">
-                <textarea id="popupNoteMessage" rows="3" placeholder="Write your announcement/message here..."></textarea>
+                
+                <input type="text" id="popupNoteTitle" placeholder="Popup Title (e.g., Important Announcement)" style="margin-bottom: 10px;">
+                <textarea id="popupNoteMessage" rows="3" placeholder="Write your announcement/message here..." style="margin-bottom: 10px;"></textarea>
+                
                 <div style="display: flex; gap: 10px;">
                     <button id="savePopupNoteBtn" style="background: #2ecc71;">📝 Add / Update Note</button>
                     <button id="removePopupNoteBtn" style="background: #e50914;">🗑️ Remove Note</button>
                 </div>
             </div>
             
-            <!-- Manage Users (Firebase) -->
+            <!-- Manage Users Section -->
             <div class="admin-card">
                 <h3><i class="fas fa-users-gear"></i> 👥 Manage Users</h3>
                 <div class="row">
@@ -146,9 +178,8 @@
                 <div id="usersList" class="users-list"></div>
             </div>
             
-            <!-- ADD VIDEO (Supabase) -->
             <div class="admin-card">
-                <h3><i class="fas fa-plus-circle"></i> ➕ Add New Video (Supabase)</h3>
+                <h3><i class="fas fa-plus-circle"></i> ➕ Add New Video</h3>
                 <div class="row">
                     <input type="text" id="newTitle" placeholder="Video Title *">
                     <input type="text" id="newYear" placeholder="Year *">
@@ -163,69 +194,68 @@
                 <input type="text" id="newVideoUrl" placeholder="Video URL *">
                 <input type="text" id="newDownloadUrl" placeholder="Download URL (optional)">
                 <input type="number" id="newViews" placeholder="Initial Views" value="0">
-                <button id="addVideoBtn">+ Add Video to Supabase</button>
+                <button id="addVideoBtn">+ Add Video</button>
             </div>
             
-            <!-- MANAGE VIDEOS (Supabase) -->
             <div class="admin-card">
-                <h3><i class="fas fa-tags"></i> 🏷️ Manage Videos - Status & Actions (Supabase)</h3>
+                <h3><i class="fas fa-tags"></i> 🏷️ Manage Videos - Status & Actions</h3>
                 <p style="color: #888; font-size: 12px; margin-bottom: 15px;">
-                    <span class="badge-sample badge-trending">🔥 Trending</span> |
-                    <span class="badge-sample badge-upcoming">📅 Upcoming</span> |
-                    <span class="badge-sample badge-featured">⭐ Featured</span>
+                    <span class="badge-sample badge-trending">🔥 Trending</span> - 1st section mein dikhega |
+                    <span class="badge-sample badge-upcoming">📅 Upcoming</span> - 2nd section mein dikhega |
+                    <span class="badge-sample badge-featured">⭐ Featured</span> - Sabse pehle, border ke saath
                 </p>
                 <div id="adminVideoList" class="movie-list"></div>
             </div>
             
-            <!-- MANAGE SLIDERS (Supabase) -->
             <div class="admin-card">
-                <h3><i class="fas fa-images"></i> 🖼️ Manage Slider Images (Supabase)</h3>
+                <h3><i class="fas fa-images"></i> 🖼️ Manage Slider Images</h3>
                 <div class="row">
                     <input type="text" id="sliderImgUrl" placeholder="Slider Image URL">
                     <input type="text" id="sliderTitle" placeholder="Slider Title">
                 </div>
                 <textarea id="sliderDesc" rows="2" placeholder="Description"></textarea>
-                <button id="addSliderBtn">+ Add Slide to Supabase</button>
+                <button id="addSliderBtn">+ Add Slide</button>
                 <div id="sliderListAdmin" class="slider-list"></div>
             </div>
             
-            <!-- Ad Links (Firebase) -->
+            <!-- Ad Links Management Section -->
             <div class="admin-card">
-                <h3><i class="fas fa-ad"></i> 📢 Manage Ad Links (Firebase)</h3>
+                <h3><i class="fas fa-ad"></i> 📢 Manage Ad Links (10 Buttons)</h3>
                 <div class="mode-selector">
                     <button class="mode-btn" id="singleModeBtn" onclick="switchMode('single')">🔗 Single Link Mode</button>
                     <button class="mode-btn" id="multiModeBtn" onclick="switchMode('multi')">📋 Multiple Links Mode</button>
                 </div>
                 <div id="singleLinkMode" class="single-link-mode">
-                    <label><i class="fas fa-link"></i> Single Link</label>
-                    <input type="text" id="singleAdLink" placeholder="Enter one ad link">
-                    <button id="applySingleLinkBtn" style="margin-top: 10px; background: #3498db;">Apply to All</button>
+                    <label><i class="fas fa-link"></i> Single Link (Auto-fill all 10 buttons)</label>
+                    <input type="text" id="singleAdLink" class="auth-input" placeholder="Enter one ad link to apply to all 10 buttons" style="margin-top: 10px;">
+                    <button id="applySingleLinkBtn" style="margin-top: 10px; background: #3498db;">Apply to All 10 Buttons</button>
                 </div>
                 <div id="multiLinkMode" style="display: none;">
-                    <label><i class="fas fa-list"></i> Individual Links</label>
+                    <label><i class="fas fa-list"></i> Individual Links for Each Button</label>
                     <div class="ad-links-grid" id="adLinksGrid"></div>
                     <button id="saveMultiLinksBtn">💾 Save All Links</button>
                 </div>
                 <div id="adLinksList" class="ad-links-list" style="margin-top: 20px;">
-                    <h4>📋 Current Ad Links Status</h4>
+                    <h4 style="margin-bottom: 10px;">📋 Current Ad Links Status</h4>
                     <div id="currentLinksList"></div>
                 </div>
             </div>
             
-            <!-- Membership URL (Firebase) -->
+            <!-- Membership Button URL Management Section -->
             <div class="admin-card">
                 <h3><i class="fas fa-crown"></i> 👑 Membership Button URL</h3>
-                <input type="text" id="membershipUrl" placeholder="Enter Membership URL">
-                <button id="saveMembershipUrlBtn" style="margin-top: 5px;">💾 Save Membership URL</button>
+                <input type="text" id="membershipUrl" placeholder="Enter Membership URL (e.g., https://example.com/membership)" style="width: 100%;">
+                <button id="saveMembershipUrlBtn" style="margin-top: 5px; background: #e50914;">💾 Save Membership URL</button>
                 <div id="currentMembershipUrl" style="margin-top: 15px; padding: 12px; background: #2a2a2a; border-radius: 10px;">
                     <small style="color: #888;">Current URL: </small>
-                    <span id="currentMembershipUrlDisplay" style="color: #FFD700;">Not set</span>
+                    <span id="currentMembershipUrlDisplay" style="color: #FFD700; word-break: break-all;">Not set</span>
                 </div>
             </div>
             
+            <!-- Footer -->
             <div class="admin-footer">
                 <div class="copyright">© 2024 ViralStreet69.online</div>
-                <div class="rights">All Rights Reserved.</div>
+                <div class="rights">All Rights Reserved. | Premium Entertainment Platform</div>
             </div>
         </div>
     </div>
@@ -257,7 +287,7 @@
         // ========== SUPABASE SETUP ==========
         const SUPABASE_URL = 'https://gbbugdhizwrrmrvtytec.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdiYnVnZGhpendycm1ydnR5dGVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODEyMTEsImV4cCI6MjA5NDM1NzIxMX0.S5Lp7tyzCjIvFQovX0ntNhgc81KW5MNUoH5CHFZQdxU';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         // ========== FIREBASE SETUP ==========
         const firebaseConfig = {
@@ -274,7 +304,10 @@
         const auth = firebase.auth();
         
         let currentVideos = [], currentSlides = [], isAdminLoggedIn = false;
-        let currentAdLinks = [], currentMode = 'single', currentMembershipUrl = "", allUsers = [];
+        let currentAdLinks = [];
+        let currentMode = 'single';
+        let currentMembershipUrl = "";
+        let allUsers = [];
         
         function showToast(msg, isError = false) {
             const toast = document.createElement('div');
@@ -291,105 +324,191 @@
         function formatDate(date) {
             if (!date) return 'N/A';
             try {
-                let d = (date && typeof date.toDate === 'function') ? date.toDate() : new Date(date);
+                let d;
+                if (date && typeof date.toDate === 'function') d = date.toDate();
+                else if (date && date.seconds) d = new Date(date.seconds * 1000);
+                else d = new Date(date);
                 return d.toLocaleDateString();
             } catch(e) { return 'N/A'; }
         }
         
-        // ========== POPUP NOTE (FIREBASE) ==========
+        // ========== POPUP NOTE FUNCTIONS (FIREBASE) ==========
         async function loadPopupNote() {
             try {
-                const doc = await db.collection("popupNotes").doc("activeNote").get();
+                const docRef = db.collection("popupNotes").doc("activeNote");
+                const doc = await docRef.get();
                 const statusDiv = document.getElementById('currentNoteStatus');
                 if (doc.exists && doc.data().active === true) {
-                    statusDiv.innerHTML = `<div class="current-note-title" style="color:#FFD700;">${escapeHtml(doc.data().title)}</div><div class="current-note-message">${escapeHtml(doc.data().message)}</div>`;
+                    statusDiv.innerHTML = `
+                        <div class="current-note-title" style="color: #FFD700;">${escapeHtml(doc.data().title)}</div>
+                        <div class="current-note-message">${escapeHtml(doc.data().message)}</div>
+                        <small style="color: #888; margin-top: 5px; display: block;">Last updated: ${doc.data().updatedAt ? new Date(doc.data().updatedAt.toDate()).toLocaleString() : 'Recently'}</small>
+                    `;
                     document.getElementById('popupNoteTitle').value = doc.data().title || '';
                     document.getElementById('popupNoteMessage').value = doc.data().message || '';
                 } else {
-                    statusDiv.innerHTML = '<div class="empty-note">No active note.</div>';
+                    statusDiv.innerHTML = '<div class="empty-note">No active note. Add one above to show popup to users.</div>';
+                    document.getElementById('popupNoteTitle').value = '';
+                    document.getElementById('popupNoteMessage').value = '';
                 }
-            } catch (error) { console.error("Error:", error); }
+            } catch (error) {
+                console.error("Error loading popup note:", error);
+                document.getElementById('currentNoteStatus').innerHTML = '<div class="empty-note">Error loading note</div>';
+            }
         }
         
         async function savePopupNote() {
+            if (!isAdminLoggedIn) {
+                showToast('Please login first!', true);
+                return;
+            }
+            
             const title = document.getElementById('popupNoteTitle').value.trim();
             const message = document.getElementById('popupNoteMessage').value.trim();
-            if (!title || !message) { showToast('Please enter both title and message!', true); return; }
-            await db.collection("popupNotes").doc("activeNote").set({ title, message, active: true, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-            showToast('✅ Popup note saved!');
-            loadPopupNote();
+            
+            if (!title || !message) {
+                showToast('Please enter both title and message!', true);
+                return;
+            }
+            
+            try {
+                await db.collection("popupNotes").doc("activeNote").set({
+                    title: title,
+                    message: message,
+                    active: true,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showToast('✅ Popup note saved! Users will see it on next visit.');
+                loadPopupNote();
+            } catch (error) {
+                showToast('Error saving note: ' + error.message, true);
+            }
         }
         
         async function removePopupNote() {
-            await db.collection("popupNotes").doc("activeNote").delete();
-            showToast('✅ Popup note removed!');
-            loadPopupNote();
+            if (!isAdminLoggedIn) {
+                showToast('Please login first!', true);
+                return;
+            }
+            
+            try {
+                await db.collection("popupNotes").doc("activeNote").delete();
+                showToast('✅ Popup note removed! Users will no longer see it.');
+                loadPopupNote();
+            } catch (error) {
+                showToast('Error removing note: ' + error.message, true);
+            }
         }
         
-        // ========== USERS (FIREBASE) ==========
+        // ========== USER MANAGEMENT (FIREBASE) ==========
         async function loadUsers() {
-            const snapshot = await db.collection("users").get();
-            allUsers = [];
-            snapshot.forEach(doc => allUsers.push({ id: doc.id, ...doc.data() }));
-            updateStats();
-            renderUsersList();
+            try {
+                const snapshot = await db.collection("users").get();
+                allUsers = [];
+                snapshot.forEach(doc => { allUsers.push({ id: doc.id, ...doc.data() }); });
+                updateStats();
+                renderUsersList();
+            } catch (error) { console.error("Error loading users:", error); }
         }
         
         function updateStats() {
-            document.getElementById('totalUsers').textContent = allUsers.length;
-            document.getElementById('activeMemberships').textContent = allUsers.filter(u => u.membershipActive === true).length;
+            const totalUsers = allUsers.length;
+            const activeMemberships = allUsers.filter(u => u.membershipActive === true).length;
             let totalAdClicks = 0;
-            allUsers.forEach(user => totalAdClicks += (user.adClicks || 0));
+            allUsers.forEach(user => { totalAdClicks += (user.adClicks || 0); });
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('activeMemberships').textContent = activeMemberships;
             document.getElementById('totalAdClicks').textContent = totalAdClicks;
+            
             const today = new Date().toDateString();
-            const activeToday = allUsers.filter(u => u.lastLogin && new Date(u.lastLogin).toDateString() === today).length;
+            const activeToday = allUsers.filter(u => {
+                if (u.lastLogin) {
+                    let loginDate;
+                    if (u.lastLogin && typeof u.lastLogin.toDate === 'function') loginDate = u.lastLogin.toDate();
+                    else loginDate = new Date(u.lastLogin);
+                    return loginDate.toDateString() === today;
+                }
+                return false;
+            }).length;
             document.getElementById('activeUsers').textContent = activeToday;
         }
         
         function renderUsersList(searchTerm = '') {
             const container = document.getElementById('usersList');
+            if (!container) return;
             let filteredUsers = [...allUsers];
             if (searchTerm) {
                 const term = searchTerm.toLowerCase();
-                filteredUsers = filteredUsers.filter(u => (u.username && u.username.toLowerCase().includes(term)) || (u.email && u.email.toLowerCase().includes(term)));
+                filteredUsers = filteredUsers.filter(u => 
+                    (u.username && u.username.toLowerCase().includes(term)) || 
+                    (u.email && u.email.toLowerCase().includes(term))
+                );
             }
-            if (filteredUsers.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No users found</div>'; return; }
-            container.innerHTML = filteredUsers.map(user => `
-                <div class="user-item">
-                    <div style="flex:2;">
-                        <strong style="color:#e50914;">${escapeHtml(user.username)}</strong><br>
-                        <small>Email: ${escapeHtml(user.email || 'N/A')}</small><br>
-                        <small>Coins: ${user.coins || 0} | Ad Clicks: ${user.adClicks || 0}</small>
+            if (filteredUsers.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No users found</div>';
+                return;
+            }
+            container.innerHTML = filteredUsers.map(user => {
+                const membershipActive = user.membershipActive || false;
+                const membershipExpiry = user.membershipExpiresAt ? new Date(user.membershipExpiresAt).toLocaleDateString() : 'Not active';
+                const adClicks = user.adClicks || 0;
+                const coins = user.coins || 0;
+                const createdAt = user.createdAt ? formatDate(user.createdAt) : 'N/A';
+                const lastLogin = user.lastLogin ? formatDate(user.lastLogin) : 'N/A';
+                return `
+                    <div class="user-item">
+                        <div style="flex: 2;">
+                            <strong style="color: #e50914;">${escapeHtml(user.username)}</strong><br>
+                            <small style="color: #888;">Email: ${escapeHtml(user.email || 'N/A')}</small><br>
+                            <small style="color: #888;">Coins: ${coins} | Ad Clicks: ${adClicks}</small><br>
+                            <small style="color: #888;">Joined: ${createdAt} | Last Login: ${lastLogin}</small><br>
+                            <small style="color: ${membershipActive ? '#2ecc71' : '#888'};">Membership: ${membershipActive ? 'Active (Expires: ' + membershipExpiry + ')' : 'Inactive'}</small>
+                        </div>
+                        <div class="badges-group">
+                            ${!membershipActive ? 
+                                `<button class="activate-membership-btn" onclick="activateMembership('${user.id}', '${escapeHtml(user.username)}')"><i class="fas fa-crown"></i> Give 1 Month Membership</button>` : 
+                                `<button class="deactivate-membership-btn" onclick="deactivateMembership('${user.id}', '${escapeHtml(user.username)}')"><i class="fas fa-ban"></i> Remove Membership</button>`
+                            }
+                        </div>
                     </div>
-                    <div class="badges-group">
-                        ${!user.membershipActive ? 
-                            `<button class="activate-membership-btn" onclick="activateMembership('${user.id}', '${escapeHtml(user.username)}')"><i class="fas fa-crown"></i> Give Membership</button>` : 
-                            `<button class="deactivate-membership-btn" onclick="deactivateMembership('${user.id}', '${escapeHtml(user.username)}')"><i class="fas fa-ban"></i> Remove Membership</button>`
-                        }
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
         
         async function activateMembership(userId, username) {
-            const expiryDate = new Date(); expiryDate.setMonth(expiryDate.getMonth() + 1);
-            await db.collection("users").doc(userId).update({ membershipActive: true, membershipExpiresAt: expiryDate.toISOString() });
-            showToast(`✅ Membership activated for ${username}!`);
+            const expiryDate = new Date();
+            expiryDate.setMonth(expiryDate.getMonth() + 1);
+            await db.collection("users").doc(userId).update({
+                membershipActive: true,
+                membershipExpiresAt: expiryDate.toISOString()
+            });
+            showToast(`✅ 1 Month membership activated for ${username}!`);
             await loadUsers();
         }
         
         async function deactivateMembership(userId, username) {
-            await db.collection("users").doc(userId).update({ membershipActive: false, membershipExpiresAt: null });
+            await db.collection("users").doc(userId).update({
+                membershipActive: false,
+                membershipExpiresAt: null
+            });
             showToast(`❌ Membership deactivated for ${username}`);
             await loadUsers();
         }
         
-        function searchUsers() { renderUsersList(document.getElementById('searchUserInput').value.trim()); }
+        function searchUsers() {
+            const searchTerm = document.getElementById('searchUserInput').value.trim();
+            renderUsersList(searchTerm);
+        }
         
         // ========== MEMBERSHIP URL (FIREBASE) ==========
         async function loadMembershipUrl() {
-            const doc = await db.collection("settings").doc("membership").get();
-            currentMembershipUrl = doc.exists ? doc.data().url : "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
+            const docRef = db.collection("settings").doc("membership");
+            const doc = await docRef.get();
+            if (doc.exists) currentMembershipUrl = doc.data().url || "";
+            else {
+                currentMembershipUrl = "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
+                await docRef.set({ url: currentMembershipUrl });
+            }
             document.getElementById('membershipUrl').value = currentMembershipUrl;
             document.getElementById('currentMembershipUrlDisplay').textContent = currentMembershipUrl;
         }
@@ -398,6 +517,8 @@
             const url = document.getElementById('membershipUrl').value.trim();
             if (!url) { showToast('Please enter a valid URL!', true); return; }
             await db.collection("settings").doc("membership").set({ url: url });
+            currentMembershipUrl = url;
+            document.getElementById('currentMembershipUrlDisplay').textContent = url;
             showToast('✅ Membership URL saved!');
         }
         
@@ -406,26 +527,32 @@
             currentMode = mode;
             document.getElementById('singleLinkMode').style.display = mode === 'single' ? 'block' : 'none';
             document.getElementById('multiLinkMode').style.display = mode === 'multi' ? 'block' : 'none';
-            if (mode === 'multi') {
-                const container = document.getElementById('adLinksGrid');
-                container.innerHTML = '';
-                for (let i = 1; i <= 10; i++) {
-                    const value = currentAdLinks[i] || '';
-                    container.innerHTML += `<div><label class="ad-link-label">Button ${i}</label><input type="text" id="adLink_${i}" class="ad-link-input" value="${escapeHtml(value)}"></div>`;
-                }
+            document.getElementById('singleModeBtn').classList.toggle('active', mode === 'single');
+            document.getElementById('multiModeBtn').classList.toggle('active', mode === 'multi');
+            if (mode === 'multi') renderMultiLinkInputs();
+        }
+        
+        function renderMultiLinkInputs() {
+            const container = document.getElementById('adLinksGrid');
+            container.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const value = currentAdLinks[i] || '';
+                container.innerHTML += `<div><label class="ad-link-label">Button ${i}</label><input type="text" id="adLink_${i}" class="ad-link-input" placeholder="Ad link for button ${i}" value="${escapeHtml(value)}"></div>`;
             }
         }
         
         async function loadAdLinks() {
-            const doc = await db.collection("settings").doc("adLinks").get();
+            const docRef = db.collection("settings").doc("adLinks");
+            const doc = await docRef.get();
             if (doc.exists) {
                 currentAdLinks = doc.data().links || {};
                 currentMode = doc.data().mode || 'single';
             } else {
                 const defaultLink = "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
+                currentAdLinks = {};
                 for (let i = 1; i <= 10; i++) currentAdLinks[i] = defaultLink;
                 currentMode = 'single';
-                await db.collection("settings").doc("adLinks").set({ links: currentAdLinks, mode: currentMode });
+                await docRef.set({ links: currentAdLinks, mode: currentMode });
             }
             document.getElementById('singleAdLink').value = currentAdLinks[1] || '';
             switchMode(currentMode);
@@ -439,7 +566,8 @@
             for (let i = 1; i <= 10; i++) newLinks[i] = singleLink;
             await db.collection("settings").doc("adLinks").set({ links: newLinks, mode: 'single' });
             currentAdLinks = newLinks;
-            showToast('✅ Single link applied!');
+            currentMode = 'single';
+            showToast(`✅ Single link applied to all 10 buttons!`);
             updateCurrentLinksList();
         }
         
@@ -452,16 +580,19 @@
             }
             await db.collection("settings").doc("adLinks").set({ links: newLinks, mode: 'multi' });
             currentAdLinks = newLinks;
-            showToast('✅ All links saved!');
+            currentMode = 'multi';
+            showToast(`✅ All 10 links saved successfully!`);
             updateCurrentLinksList();
         }
         
         function updateCurrentLinksList() {
             const container = document.getElementById('currentLinksList');
-            let html = '<div style="max-height:200px;overflow-y:auto;">';
+            if (!container) return;
+            let html = '<div style="max-height: 200px; overflow-y: auto;">';
             for (let i = 1; i <= 10; i++) {
                 const link = currentAdLinks[i] || 'Not set';
-                html += `<div style="padding:8px;border-bottom:1px solid #333;font-size:12px;"><strong style="color:#e50914;">Button ${i}:</strong> <span style="color:#888;">${escapeHtml(link.substring(0,50))}...</span></div>`;
+                const shortLink = link.length > 50 ? link.substring(0, 50) + '...' : link;
+                html += `<div style="padding: 8px; border-bottom: 1px solid #333; font-size: 12px;"><strong style="color: #e50914;">Button ${i}:</strong> <span style="color: #888; word-break: break-all;">${escapeHtml(shortLink)}</span></div>`;
             }
             html += '</div>';
             container.innerHTML = html;
@@ -469,10 +600,26 @@
         
         // ========== VIDEOS (SUPABASE) ==========
         async function loadVideosFromSupabase() {
-            const { data, error } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
-            if (error) { console.error('Error loading videos:', error); return; }
-            currentVideos = data.map(v => ({ id: v.id, title: v.title, year: v.year, category: v.category, thumbnail: v.image_url, videoUrl: v.video_url, downloadUrl: v.download_url, views: v.views, isTrending: v.is_trending, isUpcoming: v.is_upcoming, isFeatured: v.is_featured }));
-            if (isAdminLoggedIn) renderAdminVideoList();
+            try {
+                const { data, error } = await supabaseClient.from('videos').select('*').order('created_at', { ascending: false });
+                if (error) { console.error('Error loading videos:', error); return; }
+                currentVideos = data.map(v => ({ 
+                    id: v.id, 
+                    title: v.title, 
+                    year: v.year, 
+                    category: v.category, 
+                    thumbnail: v.image_url, 
+                    videoUrl: v.video_url, 
+                    downloadUrl: v.download_url, 
+                    views: v.views, 
+                    isTrending: v.is_trending, 
+                    isUpcoming: v.is_upcoming, 
+                    isFeatured: v.is_featured 
+                }));
+                if (isAdminLoggedIn) renderAdminVideoList();
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
         
         async function addVideoToSupabase() {
@@ -486,7 +633,7 @@
             
             if (!title || !year || !image_url || !video_url) { showToast('Please fill all required fields!', true); return; }
             
-            const { error } = await supabase.from('videos').insert([{
+            const { error } = await supabaseClient.from('videos').insert([{
                 title, year, category, image_url, video_url, download_url, views,
                 is_trending: false, is_upcoming: false, is_featured: false,
                 created_at: new Date().toISOString()
@@ -505,7 +652,7 @@
         
         async function updateVideoFlagsSupabase(videoId, field, value) {
             const supabaseField = field === 'isTrending' ? 'is_trending' : (field === 'isUpcoming' ? 'is_upcoming' : 'is_featured');
-            const { error } = await supabase.from('videos').update({ [supabaseField]: value }).eq('id', videoId);
+            const { error } = await supabaseClient.from('videos').update({ [supabaseField]: value }).eq('id', videoId);
             if (error) { showToast('Error updating flag!', true); return; }
             showToast(`✅ ${field} updated!`);
             await loadVideosFromSupabase();
@@ -513,7 +660,7 @@
         
         async function deleteVideoFromSupabase(videoId) {
             if (!confirm('Delete this video?')) return;
-            const { error } = await supabase.from('videos').delete().eq('id', videoId);
+            const { error } = await supabaseClient.from('videos').delete().eq('id', videoId);
             if (error) { showToast('Error deleting video!', true); return; }
             showToast('🗑️ Video deleted from Supabase!');
             await loadVideosFromSupabase();
@@ -545,7 +692,7 @@
                 download_url: document.getElementById('editDownloadUrl').value || '',
                 views: parseInt(document.getElementById('editViews').value) || 0
             };
-            const { error } = await supabase.from('videos').update(updates).eq('id', id);
+            const { error } = await supabaseClient.from('videos').update(updates).eq('id', id);
             if (error) { showToast('Error updating video!', true); return; }
             showToast('✅ Video updated in Supabase!');
             closeEditModal();
@@ -555,17 +702,17 @@
         function renderAdminVideoList() {
             const container = document.getElementById('adminVideoList');
             if (!container) return;
-            if (currentVideos.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No videos found.</div>'; return; }
+            if (currentVideos.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No videos found. Add your first video!</div>'; return; }
             container.innerHTML = currentVideos.map(v => `
                 <div class="movie-item">
                     <div class="movie-info">
-                        <strong>${escapeHtml(v.title)}</strong> (${v.year}) - ${v.category}<br>
-                        <small>👁️ ${formatViews(v.views||0)}</small>
+                        <strong>${escapeHtml(v.title)}</strong> (${v.year}) - ${v.category} <br>
+                        <small style="color:#888;">👁️ ${formatViews(v.views||0)}</small>
                     </div>
                     <div class="badges-group">
                         <label class="badge-checkbox trending"><input type="checkbox" ${v.isTrending ? 'checked' : ''} onchange="updateVideoFlagsSupabase('${v.id}','isTrending',this.checked)"> 🔥 Trending</label>
                         <label class="badge-checkbox upcoming"><input type="checkbox" ${v.isUpcoming ? 'checked' : ''} onchange="updateVideoFlagsSupabase('${v.id}','isUpcoming',this.checked)"> 📅 Upcoming</label>
-                        <label class="badge-checkbox featured"><input type="checkbox" ${v.isFeatured ? 'checked' : ''} onchange="updateVideoFlagsSupabase('${v.id}','isFeatured',this.checked)"> ⭐ Featured</label>
+                        <label class="badge-checkbox featured"><input type="checkbox" ${v.isFeatured ? 'checked' : ''} onchange="updateVideoFlagsSupabase('${v.id}','isFeatured',this.checked)"> ⭐ Featured (1st)</label>
                         <button class="edit-btn" onclick="openEditModalSupabase('${v.id}')"><i class="fas fa-edit"></i> Edit</button>
                         <button class="delete-btn" onclick="deleteVideoFromSupabase('${v.id}')"><i class="fas fa-trash"></i> Delete</button>
                     </div>
@@ -575,10 +722,14 @@
         
         // ========== SLIDERS (SUPABASE) ==========
         async function loadSlidersFromSupabase() {
-            const { data, error } = await supabase.from('sliders').select('*').order('order', { ascending: true });
-            if (error) { console.error('Error loading sliders:', error); return; }
-            currentSlides = data;
-            if (isAdminLoggedIn) renderAdminSliderList();
+            try {
+                const { data, error } = await supabaseClient.from('sliders').select('*').order('order', { ascending: true });
+                if (error) { console.error('Error loading sliders:', error); return; }
+                currentSlides = data;
+                if (isAdminLoggedIn) renderAdminSliderList();
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
         
         async function addSliderToSupabase() {
@@ -587,7 +738,7 @@
             const description = document.getElementById('sliderDesc').value.trim();
             if (!image_url || !title || !description) { showToast('Please fill all slider fields!', true); return; }
             const order = currentSlides.length;
-            const { error } = await supabase.from('sliders').insert([{ image_url, title, description, badge: "FEATURED", order, created_at: new Date().toISOString() }]);
+            const { error } = await supabaseClient.from('sliders').insert([{ image_url, title, description, badge: "FEATURED", order, created_at: new Date().toISOString() }]);
             if (error) { showToast('Error: ' + error.message, true); return; }
             showToast('✅ Slider added to Supabase!');
             document.getElementById('sliderImgUrl').value = '';
@@ -598,7 +749,7 @@
         
         async function deleteSliderFromSupabase(sliderId) {
             if (!confirm('Delete this slider?')) return;
-            const { error } = await supabase.from('sliders').delete().eq('id', sliderId);
+            const { error } = await supabaseClient.from('sliders').delete().eq('id', sliderId);
             if (error) { showToast('Error deleting slider!', true); return; }
             showToast('Slider deleted from Supabase!');
             await loadSlidersFromSupabase();
@@ -607,10 +758,10 @@
         function renderAdminSliderList() {
             const container = document.getElementById('sliderListAdmin');
             if (!container) return;
-            if (currentSlides.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No sliders added.</div>'; return; }
+            if (currentSlides.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No sliders added. Add your first slider!</div>'; return; }
             container.innerHTML = currentSlides.map(s => `
                 <div class="slider-item">
-                    <span><strong>${escapeHtml(s.title)}</strong><br><small>${s.image_url ? s.image_url.substring(0,40)+'...' : ''}</small></span>
+                    <span><strong>${escapeHtml(s.title)}</strong><br><small style="color:#888;">${s.image_url ? s.image_url.substring(0, 40) + '...' : ''}</small></span>
                     <button class="delete-btn" onclick="deleteSliderFromSupabase('${s.id}')">Delete</button>
                 </div>
             `).join('');
@@ -622,7 +773,12 @@
         async function login() {
             const email = document.getElementById('adminEmail').value.trim();
             const password = document.getElementById('adminPassword').value;
-            if (!email || !password) { showToast('Please enter email and password!', true); return; }
+            
+            if (!email || !password) {
+                showToast('Please enter email and password!', true);
+                return;
+            }
+            
             try {
                 await auth.signInWithEmailAndPassword(email, password);
                 isAdminLoggedIn = true;
@@ -630,8 +786,12 @@
                 document.getElementById('adminSection').style.display = 'block';
                 await Promise.all([loadPopupNote(), loadAdLinks(), loadMembershipUrl(), loadUsers(), loadVideosFromSupabase(), loadSlidersFromSupabase()]);
                 showToast('✅ Admin access granted!');
+                
                 setInterval(async () => { await loadUsers(); await loadPopupNote(); }, 30000);
-            } catch (error) { showToast('❌ Invalid credentials!', true); }
+            } catch (error) {
+                console.error("Login error:", error);
+                showToast('❌ Invalid credentials!', true);
+            }
         }
         
         // ========== EVENT LISTENERS ==========
@@ -639,16 +799,17 @@
         document.getElementById('addVideoBtn').addEventListener('click', addVideoToSupabase);
         document.getElementById('addSliderBtn').addEventListener('click', addSliderToSupabase);
         document.getElementById('saveEditBtn').addEventListener('click', saveEditedVideoSupabase);
+        document.getElementById('adminPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
         document.getElementById('applySingleLinkBtn').addEventListener('click', saveSingleLink);
         document.getElementById('saveMultiLinksBtn').addEventListener('click', saveMultiLinks);
         document.getElementById('saveMembershipUrlBtn').addEventListener('click', saveMembershipUrl);
         document.getElementById('searchUserBtn').addEventListener('click', searchUsers);
         document.getElementById('refreshUsersBtn').addEventListener('click', () => loadUsers());
+        document.getElementById('searchUserInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') searchUsers(); });
         document.getElementById('savePopupNoteBtn').addEventListener('click', savePopupNote);
         document.getElementById('removePopupNoteBtn').addEventListener('click', removePopupNote);
-        document.getElementById('adminPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
         
-        // Global functions
+        // ========== GLOBAL FUNCTIONS ==========
         window.updateVideoFlagsSupabase = updateVideoFlagsSupabase;
         window.deleteVideoFromSupabase = deleteVideoFromSupabase;
         window.openEditModalSupabase = openEditModalSupabase;
@@ -660,3 +821,4 @@
     </script>
 </body>
 </html>
+```
