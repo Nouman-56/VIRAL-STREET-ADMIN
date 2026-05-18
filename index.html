@@ -10,7 +10,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Chart.js for stats graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -62,7 +61,6 @@
         .stat-card .stat-number { font-size: 32px; font-weight: 800; color: #FFD700; }
         .stat-card .stat-label { font-size: 14px; color: #888; margin-top: 5px; }
         
-        /* Stats Calendar Styles */
         .stats-calendar-card {
             background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
             border-radius: 16px;
@@ -157,9 +155,7 @@
             background: #151515;
             border-radius: 12px;
         }
-        canvas {
-            max-height: 300px;
-        }
+        canvas { max-height: 300px; }
         
         .ad-links-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
         .ad-link-input { background: #2a2a2a; border: 1px solid #3d3d3d; border-radius: 10px; padding: 10px 12px; color: white; font-size: 13px; }
@@ -177,6 +173,32 @@
         .current-note-message { color: #ccc; font-size: 13px; }
         .empty-note { color: #888; font-style: italic; }
         
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .logout-btn {
+            background: #e50914;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logout-btn:hover {
+            background: #ff1a1a;
+            transform: scale(1.02);
+        }
+        
         .admin-footer {
             text-align: center;
             padding: 25px 20px;
@@ -185,15 +207,8 @@
             color: #888;
             font-size: 14px;
         }
-        .admin-footer .copyright {
-            color: #e50914;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-        .admin-footer .rights {
-            margin-top: 5px;
-            font-size: 12px;
-        }
+        .admin-footer .copyright { color: #e50914; font-weight: 600; letter-spacing: 1px; }
+        .admin-footer .rights { margin-top: 5px; font-size: 12px; }
         
         @media (max-width: 768px) { 
             .row { flex-direction: column; } 
@@ -202,6 +217,7 @@
             .stats-grid { grid-template-columns: 1fr; }
             .stats-header { flex-direction: column; align-items: stretch; }
             .date-filter { flex-direction: column; }
+            .admin-header { flex-direction: column; }
         }
     </style>
 </head>
@@ -221,7 +237,10 @@
         </div>
         
         <div id="adminSection" style="display: none;">
-            <h1><i class="fas fa-cog"></i> VIRAL STREET - Admin Panel</h1>
+            <div class="admin-header">
+                <h1><i class="fas fa-cog"></i> VIRAL STREET - Admin Panel</h1>
+                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
             
             <!-- Stats Dashboard -->
             <div class="stats-grid" id="statsGrid">
@@ -247,7 +266,7 @@
                 </div>
             </div>
             
-            <!-- ========== COMPLETE STATS CALENDAR SECTION ========== -->
+            <!-- Visitor Statistics Section -->
             <div class="stats-calendar-card">
                 <h3><i class="fas fa-chart-line"></i> 📊 Visitor Statistics</h3>
                 
@@ -292,17 +311,9 @@
                 <div class="stats-table-container">
                     <table class="stats-table" id="statsTable">
                         <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Visitors</th>
-                                <th>Page Views</th>
-                                <th>Unique</th>
-                                <th>Auth Views</th>
-                            </tr>
+                            <tr><th>Date</th><th>Visitors</th><th>Page Views</th><th>Unique</th><th>Auth Views</th></tr>
                         </thead>
-                        <tbody id="statsTableBody">
-                            <tr><td colspan="5">Loading statistics...</td></tr>
-                        </tbody>
+                        <tbody id="statsTableBody"><tr><td colspan="5">Loading statistics...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -310,16 +321,14 @@
             <!-- POPUP NOTE MANAGER SECTION -->
             <div class="admin-card">
                 <h3><i class="fas fa-bell"></i> 📢 Popup Notification Manager</h3>
-                <p style="color: #888; font-size: 12px; margin-bottom: 15px;">
-                    Users will see this popup when they visit the site. Click "Remove Note" to stop showing.
-                </p>
+                <p style="color: #888; font-size: 12px; margin-bottom: 15px;">Users will see this popup when they visit the site. Click "Remove Note" to stop showing.</p>
                 
                 <div id="currentNoteDisplay" class="current-note-display">
                     <div class="current-note-title"><i class="fas fa-bell"></i> Current Active Note:</div>
                     <div id="currentNoteStatus" class="empty-note">No active note</div>
                 </div>
                 
-                <input type="text" id="popupNoteTitle" placeholder="Popup Title (e.g., Important Announcement)" style="margin-bottom: 10px;">
+                <input type="text" id="popupNoteTitle" placeholder="Popup Title" style="margin-bottom: 10px;">
                 <textarea id="popupNoteMessage" rows="3" placeholder="Write your announcement/message here..." style="margin-bottom: 10px;"></textarea>
                 
                 <div style="display: flex; gap: 10px;">
@@ -405,7 +414,7 @@
             <!-- Membership Button URL Management Section -->
             <div class="admin-card">
                 <h3><i class="fas fa-crown"></i> 👑 Membership Button URL</h3>
-                <input type="text" id="membershipUrl" placeholder="Enter Membership URL (e.g., https://example.com/membership)" style="width: 100%;">
+                <input type="text" id="membershipUrl" placeholder="Enter Membership URL" style="width: 100%;">
                 <button id="saveMembershipUrlBtn" style="margin-top: 5px; background: #e50914;">💾 Save Membership URL</button>
                 <div id="currentMembershipUrl" style="margin-top: 15px; padding: 12px; background: #2a2a2a; border-radius: 10px;">
                     <small style="color: #888;">Current URL: </small>
@@ -413,7 +422,6 @@
                 </div>
             </div>
             
-            <!-- Footer -->
             <div class="admin-footer">
                 <div class="copyright">© 2024 ViralStreet69.online</div>
                 <div class="rights">All Rights Reserved. | Premium Entertainment Platform</div>
@@ -469,11 +477,11 @@
         let currentMode = 'single';
         let currentMembershipUrl = "";
         let allUsers = [];
-        
-        // Stats variables
         let statsChart = null;
-        let currentStartDate = null;
-        let currentEndDate = null;
+        let statsUnsubscribe = null;
+        let usersUnsubscribe = null;
+        let videosUnsubscribe = null;
+        let slidersUnsubscribe = null;
         
         function showToast(msg, isError = false) {
             const toast = document.createElement('div');
@@ -490,24 +498,54 @@
         function formatDate(date) {
             if (!date) return 'N/A';
             try {
-                let d;
-                if (date && typeof date.toDate === 'function') d = date.toDate();
-                else if (date && date.seconds) d = new Date(date.seconds * 1000);
-                else d = new Date(date);
+                let d = (date && typeof date.toDate === 'function') ? date.toDate() : new Date(date);
                 return d.toLocaleDateString();
             } catch(e) { return 'N/A'; }
         }
         
-        // ========== STATS FUNCTIONS ==========
-        async function loadStats(startDate, endDate) {
-            try {
-                let query = db.collection("site_stats");
-                
-                if (startDate && endDate) {
-                    query = query.where("date", ">=", startDate).where("date", "<=", endDate);
+        // ========== REAL-TIME STATS FUNCTIONS ==========
+        function renderStatsTable(data) {
+            const tbody = document.getElementById('statsTableBody');
+            if (!data.length) {
+                tbody.innerHTML = '<tr><td colspan="5">No data available for selected period</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(item => `
+                <tr><td>${item.date}</td><td>${item.visitors.toLocaleString()}</td><td>${item.page_views.toLocaleString()}</td><td>${item.unique_visitors.toLocaleString()}</td><td>${item.auth_views.toLocaleString()}</td></tr>
+            `).join('');
+        }
+        
+        function renderStatsChart(data) {
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            if (statsChart) statsChart.destroy();
+            
+            statsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(item => item.date),
+                    datasets: [
+                        { label: 'Visitors', data: data.map(item => item.visitors), borderColor: '#e50914', backgroundColor: 'rgba(229, 9, 20, 0.1)', tension: 0.4, fill: true },
+                        { label: 'Page Views', data: data.map(item => item.page_views), borderColor: '#FFD700', backgroundColor: 'rgba(255, 215, 0, 0.1)', tension: 0.4, fill: true }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { labels: { color: 'white' } } },
+                    scales: { y: { grid: { color: '#333' }, ticks: { color: 'white' } }, x: { grid: { color: '#333' }, ticks: { color: 'white', rotation: 45, maxRotation: 45 } } }
                 }
-                
-                const snapshot = await query.orderBy("date", "asc").get();
+            });
+        }
+        
+        function loadStatsRealtime(startDate, endDate) {
+            if (statsUnsubscribe) statsUnsubscribe();
+            
+            let query = db.collection("site_stats");
+            if (startDate && endDate) {
+                query = query.where("date", ">=", startDate).where("date", "<=", endDate);
+            }
+            
+            statsUnsubscribe = query.orderBy("date", "asc").onSnapshot((snapshot) => {
                 const statsData = [];
                 let totalVisitors = 0, totalPageViews = 0, totalUnique = 0, totalAuth = 0;
                 
@@ -526,305 +564,119 @@
                     totalAuth += data.auth_views || 0;
                 });
                 
-                document.getElementById('summaryVisitors').textContent = totalVisitors.toLocaleString();
-                document.getElementById('summaryPageViews').textContent = totalPageViews.toLocaleString();
-                document.getElementById('summaryUnique').textContent = totalUnique.toLocaleString();
-                document.getElementById('summaryAuth').textContent = totalAuth.toLocaleString();
+                document.getElementById('summaryVisitors').innerHTML = totalVisitors.toLocaleString();
+                document.getElementById('summaryPageViews').innerHTML = totalPageViews.toLocaleString();
+                document.getElementById('summaryUnique').innerHTML = totalUnique.toLocaleString();
+                document.getElementById('summaryAuth').innerHTML = totalAuth.toLocaleString();
                 
                 renderStatsTable(statsData);
                 renderStatsChart(statsData);
-                
-            } catch (error) {
-                console.error("Error loading stats:", error);
-                document.getElementById('statsTableBody').innerHTML = '<tr><td colspan="5">Error loading statistics</td></tr>';
-            }
-        }
-        
-        function renderStatsTable(data) {
-            const tbody = document.getElementById('statsTableBody');
-            if (!data.length) {
-                tbody.innerHTML = '<tr><td colspan="5">No data available for selected period</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = data.map(item => `
-                <tr>
-                    <td>${item.date}</td>
-                    <td>${item.visitors.toLocaleString()}</td>
-                    <td>${item.page_views.toLocaleString()}</td>
-                    <td>${item.unique_visitors.toLocaleString()}</td>
-                    <td>${item.auth_views.toLocaleString()}</td>
-                </tr>
-            `).join('');
-        }
-        
-        function renderStatsChart(data) {
-            const ctx = document.getElementById('statsChart').getContext('2d');
-            
-            if (statsChart) {
-                statsChart.destroy();
-            }
-            
-            const dates = data.map(item => item.date);
-            const visitors = data.map(item => item.visitors);
-            const pageViews = data.map(item => item.page_views);
-            
-            statsChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [
-                        {
-                            label: 'Visitors',
-                            data: visitors,
-                            borderColor: '#e50914',
-                            backgroundColor: 'rgba(229, 9, 20, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        },
-                        {
-                            label: 'Page Views',
-                            data: pageViews,
-                            borderColor: '#FFD700',
-                            backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            labels: { color: 'white' }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            grid: { color: '#333' },
-                            ticks: { color: 'white' }
-                        },
-                        x: {
-                            grid: { color: '#333' },
-                            ticks: { color: 'white', rotation: 45, maxRotation: 45 }
-                        }
-                    }
-                }
-            });
+            }, (error) => console.error("Stats error:", error));
         }
         
         function setDateRange(range) {
             const today = new Date();
             const endDate = new Date(today);
             let startDate = new Date(today);
-            
             switch(range) {
-                case 'today':
-                    startDate = new Date(today);
-                    break;
-                case 'yesterday':
-                    startDate = new Date(today);
-                    startDate.setDate(startDate.getDate() - 1);
-                    endDate.setDate(endDate.getDate() - 1);
-                    break;
-                case 'week':
-                    startDate.setDate(startDate.getDate() - 7);
-                    break;
-                case 'month':
-                    startDate.setDate(startDate.getDate() - 30);
-                    break;
-                case 'year':
-                    startDate.setMonth(startDate.getMonth() - 12);
-                    break;
+                case 'today': break;
+                case 'yesterday': startDate.setDate(startDate.getDate() - 1); endDate.setDate(endDate.getDate() - 1); break;
+                case 'week': startDate.setDate(startDate.getDate() - 7); break;
+                case 'month': startDate.setDate(startDate.getDate() - 30); break;
+                case 'year': startDate.setMonth(startDate.getMonth() - 12); break;
             }
-            
             const startDateStr = startDate.toISOString().split('T')[0];
             const endDateStr = endDate.toISOString().split('T')[0];
-            
             document.getElementById('startDate').value = startDateStr;
             document.getElementById('endDate').value = endDateStr;
-            
-            loadStats(startDateStr, endDateStr);
+            loadStatsRealtime(startDateStr, endDateStr);
         }
         
-        // ========== POPUP NOTE FUNCTIONS (FIREBASE) ==========
+        // ========== POPUP NOTE FUNCTIONS ==========
         async function loadPopupNote() {
             try {
-                const docRef = db.collection("popupNotes").doc("activeNote");
-                const doc = await docRef.get();
+                const doc = await db.collection("popupNotes").doc("activeNote").get();
                 const statusDiv = document.getElementById('currentNoteStatus');
                 if (doc.exists && doc.data().active === true) {
-                    statusDiv.innerHTML = `
-                        <div class="current-note-title" style="color: #FFD700;">${escapeHtml(doc.data().title)}</div>
-                        <div class="current-note-message">${escapeHtml(doc.data().message)}</div>
-                        <small style="color: #888; margin-top: 5px; display: block;">Last updated: ${doc.data().updatedAt ? new Date(doc.data().updatedAt.toDate()).toLocaleString() : 'Recently'}</small>
-                    `;
+                    statusDiv.innerHTML = `<div class="current-note-title" style="color:#FFD700;">${escapeHtml(doc.data().title)}</div><div class="current-note-message">${escapeHtml(doc.data().message)}</div><small style="color:#888;">Last updated: ${doc.data().updatedAt ? new Date(doc.data().updatedAt.toDate()).toLocaleString() : 'Recently'}</small>`;
                     document.getElementById('popupNoteTitle').value = doc.data().title || '';
                     document.getElementById('popupNoteMessage').value = doc.data().message || '';
                 } else {
-                    statusDiv.innerHTML = '<div class="empty-note">No active note. Add one above to show popup to users.</div>';
+                    statusDiv.innerHTML = '<div class="empty-note">No active note.</div>';
                     document.getElementById('popupNoteTitle').value = '';
                     document.getElementById('popupNoteMessage').value = '';
                 }
-            } catch (error) {
-                console.error("Error loading popup note:", error);
-                document.getElementById('currentNoteStatus').innerHTML = '<div class="empty-note">Error loading note</div>';
-            }
+            } catch (error) { console.error("Error:", error); }
         }
         
         async function savePopupNote() {
-            if (!isAdminLoggedIn) {
-                showToast('Please login first!', true);
-                return;
-            }
-            
             const title = document.getElementById('popupNoteTitle').value.trim();
             const message = document.getElementById('popupNoteMessage').value.trim();
-            
-            if (!title || !message) {
-                showToast('Please enter both title and message!', true);
-                return;
-            }
-            
-            try {
-                await db.collection("popupNotes").doc("activeNote").set({
-                    title: title,
-                    message: message,
-                    active: true,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                showToast('✅ Popup note saved! Users will see it on next visit.');
-                loadPopupNote();
-            } catch (error) {
-                showToast('Error saving note: ' + error.message, true);
-            }
+            if (!title || !message) { showToast('Please enter both title and message!', true); return; }
+            await db.collection("popupNotes").doc("activeNote").set({ title, message, active: true, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+            showToast('✅ Popup note saved!');
+            loadPopupNote();
         }
         
         async function removePopupNote() {
-            if (!isAdminLoggedIn) {
-                showToast('Please login first!', true);
-                return;
-            }
-            
-            try {
-                await db.collection("popupNotes").doc("activeNote").delete();
-                showToast('✅ Popup note removed! Users will no longer see it.');
-                loadPopupNote();
-            } catch (error) {
-                showToast('Error removing note: ' + error.message, true);
-            }
+            await db.collection("popupNotes").doc("activeNote").delete();
+            showToast('✅ Popup note removed!');
+            loadPopupNote();
         }
         
-        // ========== USER MANAGEMENT (FIREBASE) ==========
-        async function loadUsers() {
-            try {
-                const snapshot = await db.collection("users").get();
+        // ========== USER MANAGEMENT ==========
+        function loadUsersRealtime() {
+            if (usersUnsubscribe) usersUnsubscribe();
+            usersUnsubscribe = db.collection("users").onSnapshot((snapshot) => {
                 allUsers = [];
-                snapshot.forEach(doc => { allUsers.push({ id: doc.id, ...doc.data() }); });
+                snapshot.forEach(doc => allUsers.push({ id: doc.id, ...doc.data() }));
                 updateStats();
                 renderUsersList();
-            } catch (error) { console.error("Error loading users:", error); }
+            }, (error) => console.error("Users error:", error));
         }
         
         function updateStats() {
-            const totalUsers = allUsers.length;
-            const activeMemberships = allUsers.filter(u => u.membershipActive === true).length;
+            document.getElementById('totalUsers').textContent = allUsers.length;
+            document.getElementById('activeMemberships').textContent = allUsers.filter(u => u.membershipActive === true).length;
             let totalAdClicks = 0;
-            allUsers.forEach(user => { totalAdClicks += (user.adClicks || 0); });
-            document.getElementById('totalUsers').textContent = totalUsers;
-            document.getElementById('activeMemberships').textContent = activeMemberships;
+            allUsers.forEach(user => totalAdClicks += (user.adClicks || 0));
             document.getElementById('totalAdClicks').textContent = totalAdClicks;
-            
             const today = new Date().toDateString();
-            const activeToday = allUsers.filter(u => {
-                if (u.lastLogin) {
-                    let loginDate;
-                    if (u.lastLogin && typeof u.lastLogin.toDate === 'function') loginDate = u.lastLogin.toDate();
-                    else loginDate = new Date(u.lastLogin);
-                    return loginDate.toDateString() === today;
-                }
-                return false;
-            }).length;
+            const activeToday = allUsers.filter(u => u.lastLogin && new Date(u.lastLogin).toDateString() === today).length;
             document.getElementById('activeUsers').textContent = activeToday;
         }
         
         function renderUsersList(searchTerm = '') {
             const container = document.getElementById('usersList');
-            if (!container) return;
             let filteredUsers = [...allUsers];
             if (searchTerm) {
                 const term = searchTerm.toLowerCase();
-                filteredUsers = filteredUsers.filter(u => 
-                    (u.username && u.username.toLowerCase().includes(term)) || 
-                    (u.email && u.email.toLowerCase().includes(term))
-                );
+                filteredUsers = filteredUsers.filter(u => (u.username && u.username.toLowerCase().includes(term)) || (u.email && u.email.toLowerCase().includes(term)));
             }
-            if (filteredUsers.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No users found</div>';
-                return;
-            }
-            container.innerHTML = filteredUsers.map(user => {
-                const membershipActive = user.membershipActive || false;
-                const membershipExpiry = user.membershipExpiresAt ? new Date(user.membershipExpiresAt).toLocaleDateString() : 'Not active';
-                const adClicks = user.adClicks || 0;
-                const coins = user.coins || 0;
-                const createdAt = user.createdAt ? formatDate(user.createdAt) : 'N/A';
-                const lastLogin = user.lastLogin ? formatDate(user.lastLogin) : 'N/A';
-                return `
-                    <div class="user-item">
-                        <div style="flex: 2;">
-                            <strong style="color: #e50914;">${escapeHtml(user.username)}</strong><br>
-                            <small style="color: #888;">Email: ${escapeHtml(user.email || 'N/A')}</small><br>
-                            <small style="color: #888;">Coins: ${coins} | Ad Clicks: ${adClicks}</small><br>
-                            <small style="color: #888;">Joined: ${createdAt} | Last Login: ${lastLogin}</small><br>
-                            <small style="color: ${membershipActive ? '#2ecc71' : '#888'};">Membership: ${membershipActive ? 'Active (Expires: ' + membershipExpiry + ')' : 'Inactive'}</small>
-                        </div>
-                        <div class="badges-group">
-                            ${!membershipActive ? 
-                                `<button class="activate-membership-btn" onclick="activateMembership('${user.id}', '${escapeHtml(user.username)}')"><i class="fas fa-crown"></i> Give 1 Month Membership</button>` : 
-                                `<button class="deactivate-membership-btn" onclick="deactivateMembership('${user.id}', '${escapeHtml(user.username)}')"><i class="fas fa-ban"></i> Remove Membership</button>`
-                            }
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            if (filteredUsers.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No users found</div>'; return; }
+            container.innerHTML = filteredUsers.map(user => `
+                <div class="user-item"><div style="flex:2;"><strong style="color:#e50914;">${escapeHtml(user.username)}</strong><br><small>Email: ${escapeHtml(user.email || 'N/A')}</small><br><small>Coins: ${user.coins || 0} | Ad Clicks: ${user.adClicks || 0}</small></div>
+                <div class="badges-group">${!user.membershipActive ? `<button class="activate-membership-btn" onclick="activateMembership('${user.id}', '${escapeHtml(user.username)}')"><i class="fas fa-crown"></i> Give Membership</button>` : `<button class="deactivate-membership-btn" onclick="deactivateMembership('${user.id}', '${escapeHtml(user.username)}')"><i class="fas fa-ban"></i> Remove Membership</button>`}</div></div>
+            `).join('');
         }
         
         async function activateMembership(userId, username) {
-            const expiryDate = new Date();
-            expiryDate.setMonth(expiryDate.getMonth() + 1);
-            await db.collection("users").doc(userId).update({
-                membershipActive: true,
-                membershipExpiresAt: expiryDate.toISOString()
-            });
-            showToast(`✅ 1 Month membership activated for ${username}!`);
-            await loadUsers();
+            const expiryDate = new Date(); expiryDate.setMonth(expiryDate.getMonth() + 1);
+            await db.collection("users").doc(userId).update({ membershipActive: true, membershipExpiresAt: expiryDate.toISOString() });
+            showToast(`✅ Membership activated for ${username}!`);
         }
         
         async function deactivateMembership(userId, username) {
-            await db.collection("users").doc(userId).update({
-                membershipActive: false,
-                membershipExpiresAt: null
-            });
+            await db.collection("users").doc(userId).update({ membershipActive: false, membershipExpiresAt: null });
             showToast(`❌ Membership deactivated for ${username}`);
-            await loadUsers();
         }
         
-        function searchUsers() {
-            const searchTerm = document.getElementById('searchUserInput').value.trim();
-            renderUsersList(searchTerm);
-        }
+        function searchUsers() { renderUsersList(document.getElementById('searchUserInput').value.trim()); }
         
-        // ========== MEMBERSHIP URL (FIREBASE) ==========
+        // ========== MEMBERSHIP URL ==========
         async function loadMembershipUrl() {
-            const docRef = db.collection("settings").doc("membership");
-            const doc = await docRef.get();
-            if (doc.exists) currentMembershipUrl = doc.data().url || "";
-            else {
-                currentMembershipUrl = "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
-                await docRef.set({ url: currentMembershipUrl });
-            }
+            const doc = await db.collection("settings").doc("membership").get();
+            currentMembershipUrl = doc.exists ? doc.data().url : "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
             document.getElementById('membershipUrl').value = currentMembershipUrl;
             document.getElementById('currentMembershipUrlDisplay').textContent = currentMembershipUrl;
         }
@@ -833,42 +685,34 @@
             const url = document.getElementById('membershipUrl').value.trim();
             if (!url) { showToast('Please enter a valid URL!', true); return; }
             await db.collection("settings").doc("membership").set({ url: url });
-            currentMembershipUrl = url;
-            document.getElementById('currentMembershipUrlDisplay').textContent = url;
             showToast('✅ Membership URL saved!');
         }
         
-        // ========== AD LINKS (FIREBASE) ==========
+        // ========== AD LINKS ==========
         function switchMode(mode) {
             currentMode = mode;
             document.getElementById('singleLinkMode').style.display = mode === 'single' ? 'block' : 'none';
             document.getElementById('multiLinkMode').style.display = mode === 'multi' ? 'block' : 'none';
-            document.getElementById('singleModeBtn').classList.toggle('active', mode === 'single');
-            document.getElementById('multiModeBtn').classList.toggle('active', mode === 'multi');
-            if (mode === 'multi') renderMultiLinkInputs();
-        }
-        
-        function renderMultiLinkInputs() {
-            const container = document.getElementById('adLinksGrid');
-            container.innerHTML = '';
-            for (let i = 1; i <= 10; i++) {
-                const value = currentAdLinks[i] || '';
-                container.innerHTML += `<div><label class="ad-link-label">Button ${i}</label><input type="text" id="adLink_${i}" class="ad-link-input" placeholder="Ad link for button ${i}" value="${escapeHtml(value)}"></div>`;
+            if (mode === 'multi') {
+                const container = document.getElementById('adLinksGrid');
+                container.innerHTML = '';
+                for (let i = 1; i <= 10; i++) {
+                    const value = currentAdLinks[i] || '';
+                    container.innerHTML += `<div><label class="ad-link-label">Button ${i}</label><input type="text" id="adLink_${i}" class="ad-link-input" value="${escapeHtml(value)}"></div>`;
+                }
             }
         }
         
         async function loadAdLinks() {
-            const docRef = db.collection("settings").doc("adLinks");
-            const doc = await docRef.get();
+            const doc = await db.collection("settings").doc("adLinks").get();
             if (doc.exists) {
                 currentAdLinks = doc.data().links || {};
                 currentMode = doc.data().mode || 'single';
             } else {
                 const defaultLink = "https://www.profitablecpmratenetwork.com/mk65i19v?key=e9f9c255c82dc28e0a257559b623568d";
-                currentAdLinks = {};
                 for (let i = 1; i <= 10; i++) currentAdLinks[i] = defaultLink;
                 currentMode = 'single';
-                await docRef.set({ links: currentAdLinks, mode: currentMode });
+                await db.collection("settings").doc("adLinks").set({ links: currentAdLinks, mode: currentMode });
             }
             document.getElementById('singleAdLink').value = currentAdLinks[1] || '';
             switchMode(currentMode);
@@ -882,8 +726,7 @@
             for (let i = 1; i <= 10; i++) newLinks[i] = singleLink;
             await db.collection("settings").doc("adLinks").set({ links: newLinks, mode: 'single' });
             currentAdLinks = newLinks;
-            currentMode = 'single';
-            showToast(`✅ Single link applied to all 10 buttons!`);
+            showToast('✅ Single link applied!');
             updateCurrentLinksList();
         }
         
@@ -896,19 +739,16 @@
             }
             await db.collection("settings").doc("adLinks").set({ links: newLinks, mode: 'multi' });
             currentAdLinks = newLinks;
-            currentMode = 'multi';
-            showToast(`✅ All 10 links saved successfully!`);
+            showToast('✅ All links saved!');
             updateCurrentLinksList();
         }
         
         function updateCurrentLinksList() {
             const container = document.getElementById('currentLinksList');
-            if (!container) return;
-            let html = '<div style="max-height: 200px; overflow-y: auto;">';
+            let html = '<div style="max-height:200px;overflow-y:auto;">';
             for (let i = 1; i <= 10; i++) {
                 const link = currentAdLinks[i] || 'Not set';
-                const shortLink = link.length > 50 ? link.substring(0, 50) + '...' : link;
-                html += `<div style="padding: 8px; border-bottom: 1px solid #333; font-size: 12px;"><strong style="color: #e50914;">Button ${i}:</strong> <span style="color: #888; word-break: break-all;">${escapeHtml(shortLink)}</span></div>`;
+                html += `<div style="padding:8px;border-bottom:1px solid #333;font-size:12px;"><strong style="color:#e50914;">Button ${i}:</strong> <span style="color:#888;">${escapeHtml(link.substring(0,50))}...</span></div>`;
             }
             html += '</div>';
             container.innerHTML = html;
@@ -916,26 +756,10 @@
         
         // ========== VIDEOS (SUPABASE) ==========
         async function loadVideosFromSupabase() {
-            try {
-                const { data, error } = await supabaseClient.from('videos').select('*').order('created_at', { ascending: false });
-                if (error) { console.error('Error loading videos:', error); return; }
-                currentVideos = data.map(v => ({ 
-                    id: v.id, 
-                    title: v.title, 
-                    year: v.year, 
-                    category: v.category, 
-                    thumbnail: v.image_url, 
-                    videoUrl: v.video_url, 
-                    downloadUrl: v.download_url, 
-                    views: v.views, 
-                    isTrending: v.is_trending, 
-                    isUpcoming: v.is_upcoming, 
-                    isFeatured: v.is_featured 
-                }));
-                if (isAdminLoggedIn) renderAdminVideoList();
-            } catch (error) {
-                console.error('Error:', error);
-            }
+            const { data, error } = await supabaseClient.from('videos').select('*').order('created_at', { ascending: false });
+            if (error) { console.error('Error loading videos:', error); return; }
+            currentVideos = data.map(v => ({ id: v.id, title: v.title, year: v.year, category: v.category, thumbnail: v.image_url, videoUrl: v.video_url, downloadUrl: v.download_url, views: v.views, isTrending: v.is_trending, isUpcoming: v.is_upcoming, isFeatured: v.is_featured }));
+            if (isAdminLoggedIn) renderAdminVideoList();
         }
         
         async function addVideoToSupabase() {
@@ -946,17 +770,10 @@
             const video_url = document.getElementById('newVideoUrl').value.trim();
             const download_url = document.getElementById('newDownloadUrl').value.trim();
             const views = parseInt(document.getElementById('newViews').value) || 0;
-            
             if (!title || !year || !image_url || !video_url) { showToast('Please fill all required fields!', true); return; }
-            
-            const { error } = await supabaseClient.from('videos').insert([{
-                title, year, category, image_url, video_url, download_url, views,
-                is_trending: false, is_upcoming: false, is_featured: false,
-                created_at: new Date().toISOString()
-            }]);
-            
+            const { error } = await supabaseClient.from('videos').insert([{ title, year, category, image_url, video_url, download_url, views, is_trending: false, is_upcoming: false, is_featured: false, created_at: new Date().toISOString() }]);
             if (error) { showToast('Error: ' + error.message, true); return; }
-            showToast(`✅ "${title}" added to Supabase!`);
+            showToast(`✅ "${title}" added!`);
             document.getElementById('newTitle').value = '';
             document.getElementById('newYear').value = '';
             document.getElementById('newThumb').value = '';
@@ -968,17 +785,14 @@
         
         async function updateVideoFlagsSupabase(videoId, field, value) {
             const supabaseField = field === 'isTrending' ? 'is_trending' : (field === 'isUpcoming' ? 'is_upcoming' : 'is_featured');
-            const { error } = await supabaseClient.from('videos').update({ [supabaseField]: value }).eq('id', videoId);
-            if (error) { showToast('Error updating flag!', true); return; }
-            showToast(`✅ ${field} updated!`);
+            await supabaseClient.from('videos').update({ [supabaseField]: value }).eq('id', videoId);
             await loadVideosFromSupabase();
         }
         
         async function deleteVideoFromSupabase(videoId) {
             if (!confirm('Delete this video?')) return;
-            const { error } = await supabaseClient.from('videos').delete().eq('id', videoId);
-            if (error) { showToast('Error deleting video!', true); return; }
-            showToast('🗑️ Video deleted from Supabase!');
+            await supabaseClient.from('videos').delete().eq('id', videoId);
+            showToast('🗑️ Video deleted!');
             await loadVideosFromSupabase();
         }
         
@@ -1008,9 +822,8 @@
                 download_url: document.getElementById('editDownloadUrl').value || '',
                 views: parseInt(document.getElementById('editViews').value) || 0
             };
-            const { error } = await supabaseClient.from('videos').update(updates).eq('id', id);
-            if (error) { showToast('Error updating video!', true); return; }
-            showToast('✅ Video updated in Supabase!');
+            await supabaseClient.from('videos').update(updates).eq('id', id);
+            showToast('✅ Video updated!');
             closeEditModal();
             await loadVideosFromSupabase();
         }
@@ -1018,34 +831,23 @@
         function renderAdminVideoList() {
             const container = document.getElementById('adminVideoList');
             if (!container) return;
-            if (currentVideos.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No videos found. Add your first video!</div>'; return; }
+            if (currentVideos.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No videos found.</div>'; return; }
             container.innerHTML = currentVideos.map(v => `
-                <div class="movie-item">
-                    <div class="movie-info">
-                        <strong>${escapeHtml(v.title)}</strong> (${v.year}) - ${v.category} <br>
-                        <small style="color:#888;">👁️ ${formatViews(v.views||0)}</small>
-                    </div>
-                    <div class="badges-group">
-                        <label class="badge-checkbox trending"><input type="checkbox" ${v.isTrending ? 'checked' : ''} onchange="updateVideoFlagsSupabase('${v.id}','isTrending',this.checked)"> 🔥 Trending</label>
-                        <label class="badge-checkbox upcoming"><input type="checkbox" ${v.isUpcoming ? 'checked' : ''} onchange="updateVideoFlagsSupabase('${v.id}','isUpcoming',this.checked)"> 📅 Upcoming</label>
-                        <label class="badge-checkbox featured"><input type="checkbox" ${v.isFeatured ? 'checked' : ''} onchange="updateVideoFlagsSupabase('${v.id}','isFeatured',this.checked)"> ⭐ Featured (1st)</label>
-                        <button class="edit-btn" onclick="openEditModalSupabase('${v.id}')"><i class="fas fa-edit"></i> Edit</button>
-                        <button class="delete-btn" onclick="deleteVideoFromSupabase('${v.id}')"><i class="fas fa-trash"></i> Delete</button>
-                    </div>
-                </div>
+                <div class="movie-item"><div class="movie-info"><strong>${escapeHtml(v.title)}</strong> (${v.year}) - ${v.category}<br><small>👁️ ${formatViews(v.views||0)}</small></div>
+                <div class="badges-group"><label class="badge-checkbox trending"><input type="checkbox" ${v.isTrending ? 'checked' : ''} onchange="updateVideoFlagsSupabase('${v.id}','isTrending',this.checked)"> 🔥 Trending</label>
+                <label class="badge-checkbox upcoming"><input type="checkbox" ${v.isUpcoming ? 'checked' : ''} onchange="updateVideoFlagsSupabase('${v.id}','isUpcoming',this.checked)"> 📅 Upcoming</label>
+                <label class="badge-checkbox featured"><input type="checkbox" ${v.isFeatured ? 'checked' : ''} onchange="updateVideoFlagsSupabase('${v.id}','isFeatured',this.checked)"> ⭐ Featured</label>
+                <button class="edit-btn" onclick="openEditModalSupabase('${v.id}')"><i class="fas fa-edit"></i> Edit</button>
+                <button class="delete-btn" onclick="deleteVideoFromSupabase('${v.id}')"><i class="fas fa-trash"></i> Delete</button></div></div>
             `).join('');
         }
         
         // ========== SLIDERS (SUPABASE) ==========
         async function loadSlidersFromSupabase() {
-            try {
-                const { data, error } = await supabaseClient.from('sliders').select('*').order('order', { ascending: true });
-                if (error) { console.error('Error loading sliders:', error); return; }
-                currentSlides = data;
-                if (isAdminLoggedIn) renderAdminSliderList();
-            } catch (error) {
-                console.error('Error:', error);
-            }
+            const { data, error } = await supabaseClient.from('sliders').select('*').order('order', { ascending: true });
+            if (error) { console.error('Error loading sliders:', error); return; }
+            currentSlides = data;
+            if (isAdminLoggedIn) renderAdminSliderList();
         }
         
         async function addSliderToSupabase() {
@@ -1054,9 +856,8 @@
             const description = document.getElementById('sliderDesc').value.trim();
             if (!image_url || !title || !description) { showToast('Please fill all slider fields!', true); return; }
             const order = currentSlides.length;
-            const { error } = await supabaseClient.from('sliders').insert([{ image_url, title, description, badge: "FEATURED", order, created_at: new Date().toISOString() }]);
-            if (error) { showToast('Error: ' + error.message, true); return; }
-            showToast('✅ Slider added to Supabase!');
+            await supabaseClient.from('sliders').insert([{ image_url, title, description, badge: "FEATURED", order, created_at: new Date().toISOString() }]);
+            showToast('✅ Slider added!');
             document.getElementById('sliderImgUrl').value = '';
             document.getElementById('sliderTitle').value = '';
             document.getElementById('sliderDesc').value = '';
@@ -1065,35 +866,42 @@
         
         async function deleteSliderFromSupabase(sliderId) {
             if (!confirm('Delete this slider?')) return;
-            const { error } = await supabaseClient.from('sliders').delete().eq('id', sliderId);
-            if (error) { showToast('Error deleting slider!', true); return; }
-            showToast('Slider deleted from Supabase!');
+            await supabaseClient.from('sliders').delete().eq('id', sliderId);
+            showToast('Slider deleted!');
             await loadSlidersFromSupabase();
         }
         
         function renderAdminSliderList() {
             const container = document.getElementById('sliderListAdmin');
             if (!container) return;
-            if (currentSlides.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No sliders added. Add your first slider!</div>'; return; }
-            container.innerHTML = currentSlides.map(s => `
-                <div class="slider-item">
-                    <span><strong>${escapeHtml(s.title)}</strong><br><small style="color:#888;">${s.image_url ? s.image_url.substring(0, 40) + '...' : ''}</small></span>
-                    <button class="delete-btn" onclick="deleteSliderFromSupabase('${s.id}')">Delete</button>
-                </div>
-            `).join('');
+            if (currentSlides.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No sliders added.</div>'; return; }
+            container.innerHTML = currentSlides.map(s => `<div class="slider-item"><span><strong>${escapeHtml(s.title)}</strong><br><small>${s.image_url ? s.image_url.substring(0,40)+'...' : ''}</small></span><button class="delete-btn" onclick="deleteSliderFromSupabase('${s.id}')">Delete</button></div>`).join('');
         }
         
         function closeEditModal() { document.getElementById('editModal').classList.remove('active'); }
+        
+        // ========== LOGOUT FUNCTION ==========
+        function logout() {
+            auth.signOut().then(() => {
+                isAdminLoggedIn = false;
+                if (statsUnsubscribe) statsUnsubscribe();
+                if (usersUnsubscribe) usersUnsubscribe();
+                document.getElementById('loginSection').style.display = 'block';
+                document.getElementById('adminSection').style.display = 'none';
+                document.getElementById('adminEmail').value = '';
+                document.getElementById('adminPassword').value = '';
+                showToast('✅ Logged out successfully!');
+            }).catch((error) => {
+                console.error("Logout error:", error);
+                showToast('Error logging out!', true);
+            });
+        }
         
         // ========== LOGIN ==========
         async function login() {
             const email = document.getElementById('adminEmail').value.trim();
             const password = document.getElementById('adminPassword').value;
-            
-            if (!email || !password) {
-                showToast('Please enter email and password!', true);
-                return;
-            }
+            if (!email || !password) { showToast('Please enter email and password!', true); return; }
             
             try {
                 await auth.signInWithEmailAndPassword(email, password);
@@ -1101,67 +909,71 @@
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('adminSection').style.display = 'block';
                 
-                // Set default date range (last 30 days)
                 const endDate = new Date().toISOString().split('T')[0];
                 const startDate = new Date();
                 startDate.setDate(startDate.getDate() - 30);
-                const startDateStr = startDate.toISOString().split('T')[0];
-                document.getElementById('startDate').value = startDateStr;
+                document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
                 document.getElementById('endDate').value = endDate;
                 
-                await Promise.all([
-                    loadPopupNote(), 
-                    loadAdLinks(), 
-                    loadMembershipUrl(), 
-                    loadUsers(), 
-                    loadVideosFromSupabase(), 
-                    loadSlidersFromSupabase(),
-                    loadStats(startDateStr, endDateStr)
-                ]);
-                showToast('✅ Admin access granted!');
-                
-                setInterval(async () => { await loadUsers(); await loadPopupNote(); }, 30000);
+                await Promise.all([loadPopupNote(), loadAdLinks(), loadMembershipUrl(), loadVideosFromSupabase(), loadSlidersFromSupabase()]);
+                loadUsersRealtime();
+                loadStatsRealtime(startDate.toISOString().split('T')[0], endDate);
+                showToast('✅ Admin access granted! Session will persist on refresh.');
             } catch (error) {
-                console.error("Login error:", error);
                 showToast('❌ Invalid credentials!', true);
             }
         }
         
+        // Check existing session on page load
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                isAdminLoggedIn = true;
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminSection').style.display = 'block';
+                
+                const endDate = new Date().toISOString().split('T')[0];
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - 30);
+                document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+                document.getElementById('endDate').value = endDate;
+                
+                await Promise.all([loadPopupNote(), loadAdLinks(), loadMembershipUrl(), loadVideosFromSupabase(), loadSlidersFromSupabase()]);
+                loadUsersRealtime();
+                loadStatsRealtime(startDate.toISOString().split('T')[0], endDate);
+                showToast('✅ Welcome back, Admin!');
+            }
+        });
+        
         // ========== EVENT LISTENERS ==========
         document.getElementById('loginBtn').addEventListener('click', login);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
         document.getElementById('addVideoBtn').addEventListener('click', addVideoToSupabase);
         document.getElementById('addSliderBtn').addEventListener('click', addSliderToSupabase);
         document.getElementById('saveEditBtn').addEventListener('click', saveEditedVideoSupabase);
-        document.getElementById('adminPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
         document.getElementById('applySingleLinkBtn').addEventListener('click', saveSingleLink);
         document.getElementById('saveMultiLinksBtn').addEventListener('click', saveMultiLinks);
         document.getElementById('saveMembershipUrlBtn').addEventListener('click', saveMembershipUrl);
         document.getElementById('searchUserBtn').addEventListener('click', searchUsers);
-        document.getElementById('refreshUsersBtn').addEventListener('click', () => loadUsers());
-        document.getElementById('searchUserInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') searchUsers(); });
+        document.getElementById('refreshUsersBtn').addEventListener('click', () => loadUsersRealtime());
         document.getElementById('savePopupNoteBtn').addEventListener('click', savePopupNote);
         document.getElementById('removePopupNoteBtn').addEventListener('click', removePopupNote);
         document.getElementById('applyDateFilterBtn').addEventListener('click', () => {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
-            if (startDate && endDate) {
-                loadStats(startDate, endDate);
-            } else {
-                showToast('Please select both start and end dates', true);
-            }
+            if (startDate && endDate) loadStatsRealtime(startDate, endDate);
+            else showToast('Please select both start and end dates', true);
         });
         
-        // Range buttons
         document.querySelectorAll('.range-btn[data-range]').forEach(btn => {
             btn.addEventListener('click', () => {
-                const range = btn.getAttribute('data-range');
-                setDateRange(range);
+                setDateRange(btn.getAttribute('data-range'));
                 document.querySelectorAll('.range-btn[data-range]').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             });
         });
         
-        // ========== GLOBAL FUNCTIONS ==========
+        document.getElementById('adminPassword').addEventListener('keypress', (e) => { if (e.key === 'Enter') login(); });
+        
         window.updateVideoFlagsSupabase = updateVideoFlagsSupabase;
         window.deleteVideoFromSupabase = deleteVideoFromSupabase;
         window.openEditModalSupabase = openEditModalSupabase;
