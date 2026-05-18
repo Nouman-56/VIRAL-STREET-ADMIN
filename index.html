@@ -23,9 +23,9 @@
         button { background: #e50914; border: none; color: white; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
         button:hover { opacity: 0.9; transform: scale(1.02); }
         .login-box { max-width: 400px; margin: 100px auto; text-align: center; }
-        .movie-list, .slider-list, .ad-links-list, .users-list { margin-top: 15px; max-height: 500px; overflow-y: auto; }
-        .movie-item, .slider-item, .ad-item, .user-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #3d3d3d; gap: 15px; flex-wrap: wrap; background: #1a1a1a; margin-bottom: 5px; border-radius: 10px; }
-        .movie-item:hover, .slider-item:hover, .ad-item:hover, .user-item:hover { background: #222; }
+        .movie-list, .slider-list, .ad-links-list, .users-list, .categories-list { margin-top: 15px; max-height: 500px; overflow-y: auto; }
+        .movie-item, .slider-item, .ad-item, .user-item, .category-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #3d3d3d; gap: 15px; flex-wrap: wrap; background: #1a1a1a; margin-bottom: 5px; border-radius: 10px; }
+        .movie-item:hover, .slider-item:hover, .ad-item:hover, .user-item:hover, .category-item:hover { background: #222; }
         .movie-info { flex: 2; min-width: 200px; }
         .movie-info strong { color: #e50914; font-size: 16px; }
         .badges-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -348,6 +348,20 @@
                 <div id="usersList" class="users-list"></div>
             </div>
             
+            <!-- ========== CATEGORY MANAGEMENT SECTION (NEW) ========== -->
+            <div class="admin-card">
+                <h3><i class="fas fa-tags"></i> 🏷️ Manage Categories</h3>
+                <p style="color: #888; font-size: 12px; margin-bottom: 15px;">Add new categories to organize your videos. These will appear in frontend category bar.</p>
+                
+                <div class="row">
+                    <input type="text" id="newCategoryName" placeholder="New Category Name (e.g., '🔥 Exclusive', '🇺🇸 USA', etc.)" style="flex: 3;">
+                    <button id="addCategoryBtn" style="background: #2ecc71;">+ Add Category</button>
+                </div>
+                
+                <div id="categoriesList" class="categories-list"></div>
+            </div>
+            
+            <!-- Add New Video Section - Dynamic Categories -->
             <div class="admin-card">
                 <h3><i class="fas fa-plus-circle"></i> ➕ Add New Video</h3>
                 <div class="row">
@@ -355,10 +369,7 @@
                     <input type="text" id="newYear" placeholder="Year *">
                 </div>
                 <select id="newCategory">
-                    <option value="premium">🔥 Premium Free</option>
-                    <option value="indian">🇮🇳 Indian Scandals</option>
-                    <option value="pakistani">🇵🇰 Pakistani Scandals</option>
-                    <option value="all">📺 All Videos</option>
+                    <!-- Categories will be loaded dynamically -->
                 </select>
                 <input type="text" id="newThumb" placeholder="Thumbnail URL *">
                 <input type="text" id="newVideoUrl" placeholder="Video URL *">
@@ -422,33 +433,31 @@
                 </div>
             </div>
             
+            <!-- Edit Video Modal -->
+            <div id="editModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-edit"></i> Edit Video</h3>
+                        <button class="close-modal" onclick="closeEditModal()">&times;</button>
+                    </div>
+                    <input type="text" id="editVideoId" style="display: none;">
+                    <input type="text" id="editTitle" placeholder="Video Title">
+                    <input type="text" id="editYear" placeholder="Year">
+                    <select id="editCategory">
+                        <!-- Categories will be loaded dynamically -->
+                    </select>
+                    <input type="text" id="editThumb" placeholder="Thumbnail URL">
+                    <input type="text" id="editVideoUrl" placeholder="Video URL">
+                    <input type="text" id="editDownloadUrl" placeholder="Download URL">
+                    <input type="number" id="editViews" placeholder="Views Count">
+                    <button id="saveEditBtn">💾 Save Changes</button>
+                </div>
+            </div>
+            
             <div class="admin-footer">
                 <div class="copyright">© 2024 ViralStreet69.online</div>
                 <div class="rights">All Rights Reserved. | Premium Entertainment Platform</div>
             </div>
-        </div>
-    </div>
-    
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-edit"></i> Edit Video</h3>
-                <button class="close-modal" onclick="closeEditModal()">&times;</button>
-            </div>
-            <input type="text" id="editVideoId" style="display: none;">
-            <input type="text" id="editTitle" placeholder="Video Title">
-            <input type="text" id="editYear" placeholder="Year">
-            <select id="editCategory">
-                <option value="premium">Premium Free</option>
-                <option value="indian">Indian Scandals</option>
-                <option value="pakistani">Pakistani Scandals</option>
-                <option value="all">All Videos</option>
-            </select>
-            <input type="text" id="editThumb" placeholder="Thumbnail URL">
-            <input type="text" id="editVideoUrl" placeholder="Video URL">
-            <input type="text" id="editDownloadUrl" placeholder="Download URL">
-            <input type="number" id="editViews" placeholder="Views Count">
-            <button id="saveEditBtn">💾 Save Changes</button>
         </div>
     </div>
 
@@ -480,8 +489,15 @@
         let statsChart = null;
         let statsUnsubscribe = null;
         let usersUnsubscribe = null;
-        let videosUnsubscribe = null;
-        let slidersUnsubscribe = null;
+        let categoriesList = [];
+        
+        // Default categories
+        const defaultCategories = [
+            { id: 'all', name: 'All', is_default: true },
+            { id: 'premium', name: '🔥 Premium', is_default: true },
+            { id: 'indian', name: '🇮🇳 Indian', is_default: true },
+            { id: 'pakistani', name: '🇵🇰 Pakistani', is_default: true }
+        ];
         
         function showToast(msg, isError = false) {
             const toast = document.createElement('div');
@@ -501,6 +517,130 @@
                 let d = (date && typeof date.toDate === 'function') ? date.toDate() : new Date(date);
                 return d.toLocaleDateString();
             } catch(e) { return 'N/A'; }
+        }
+        
+        // ========== CATEGORY MANAGEMENT (SUPABASE) ==========
+        async function loadCategories() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('categories')
+                    .select('*')
+                    .order('name', { ascending: true });
+                
+                if (error) throw error;
+                
+                if (data && data.length > 0) {
+                    categoriesList = data;
+                } else {
+                    // Insert default categories
+                    for (const cat of defaultCategories) {
+                        if (cat.id !== 'all') {
+                            await supabaseClient.from('categories').insert([{ id: cat.id, name: cat.name, is_default: true }]);
+                        }
+                    }
+                    const { data: newData } = await supabaseClient.from('categories').select('*').order('name', { ascending: true });
+                    categoriesList = newData || [];
+                }
+                
+                renderCategoriesList();
+                updateCategoryDropdowns();
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                categoriesList = defaultCategories.filter(c => c.id !== 'all');
+                renderCategoriesList();
+                updateCategoryDropdowns();
+            }
+        }
+        
+        async function addCategory() {
+            const categoryName = document.getElementById('newCategoryName').value.trim();
+            if (!categoryName) {
+                showToast('Please enter a category name!', true);
+                return;
+            }
+            
+            // Generate ID from name (lowercase, remove special chars)
+            const categoryId = categoryName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            
+            // Check if category already exists
+            if (categoriesList.some(c => c.id === categoryId || c.name === categoryName)) {
+                showToast('Category already exists!', true);
+                return;
+            }
+            
+            const { error } = await supabaseClient
+                .from('categories')
+                .insert([{ id: categoryId, name: categoryName, is_default: false }]);
+            
+            if (error) {
+                showToast('Error adding category: ' + error.message, true);
+                return;
+            }
+            
+            showToast(`✅ Category "${categoryName}" added!`);
+            document.getElementById('newCategoryName').value = '';
+            await loadCategories();
+        }
+        
+        async function deleteCategory(categoryId, categoryName) {
+            // Don't allow deleting default categories
+            const category = categoriesList.find(c => c.id === categoryId);
+            if (category && category.is_default) {
+                showToast('Cannot delete default categories!', true);
+                return;
+            }
+            
+            if (!confirm(`Delete category "${categoryName}"? Videos in this category will remain but category will be removed from options.`)) return;
+            
+            const { error } = await supabaseClient
+                .from('categories')
+                .delete()
+                .eq('id', categoryId);
+            
+            if (error) {
+                showToast('Error deleting category: ' + error.message, true);
+                return;
+            }
+            
+            showToast(`✅ Category "${categoryName}" deleted!`);
+            await loadCategories();
+        }
+        
+        function renderCategoriesList() {
+            const container = document.getElementById('categoriesList');
+            if (!container) return;
+            
+            if (categoriesList.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No categories found. Add your first category!</div>';
+                return;
+            }
+            
+            container.innerHTML = categoriesList.map(cat => `
+                <div class="category-item">
+                    <div style="flex: 1;">
+                        <strong style="color: #e50914;">${escapeHtml(cat.name)}</strong>
+                        <small style="color: #888; margin-left: 10px;">ID: ${cat.id}</small>
+                        ${cat.is_default ? '<small style="color: #2ecc71; margin-left: 10px;">(Default)</small>' : ''}
+                    </div>
+                    <div class="badges-group">
+                        ${!cat.is_default ? `<button class="delete-btn" onclick="deleteCategory('${cat.id}', '${escapeHtml(cat.name)}')"><i class="fas fa-trash"></i> Delete</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateCategoryDropdowns() {
+            // Update Add Video category dropdown
+            const newCatSelect = document.getElementById('newCategory');
+            if (newCatSelect) {
+                newCatSelect.innerHTML = categoriesList.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+            }
+            
+            // Update Edit Video category dropdown
+            const editCatSelect = document.getElementById('editCategory');
+            if (editCatSelect) {
+                editCatSelect.innerHTML = categoriesList.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
+            }
         }
         
         // ========== REAL-TIME STATS FUNCTIONS ==========
@@ -915,7 +1055,7 @@
                 document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
                 document.getElementById('endDate').value = endDate;
                 
-                await Promise.all([loadPopupNote(), loadAdLinks(), loadMembershipUrl(), loadVideosFromSupabase(), loadSlidersFromSupabase()]);
+                await Promise.all([loadCategories(), loadPopupNote(), loadAdLinks(), loadMembershipUrl(), loadVideosFromSupabase(), loadSlidersFromSupabase()]);
                 loadUsersRealtime();
                 loadStatsRealtime(startDate.toISOString().split('T')[0], endDate);
                 showToast('✅ Admin access granted! Session will persist on refresh.');
@@ -937,7 +1077,7 @@
                 document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
                 document.getElementById('endDate').value = endDate;
                 
-                await Promise.all([loadPopupNote(), loadAdLinks(), loadMembershipUrl(), loadVideosFromSupabase(), loadSlidersFromSupabase()]);
+                await Promise.all([loadCategories(), loadPopupNote(), loadAdLinks(), loadMembershipUrl(), loadVideosFromSupabase(), loadSlidersFromSupabase()]);
                 loadUsersRealtime();
                 loadStatsRealtime(startDate.toISOString().split('T')[0], endDate);
                 showToast('✅ Welcome back, Admin!');
@@ -957,6 +1097,7 @@
         document.getElementById('refreshUsersBtn').addEventListener('click', () => loadUsersRealtime());
         document.getElementById('savePopupNoteBtn').addEventListener('click', savePopupNote);
         document.getElementById('removePopupNoteBtn').addEventListener('click', removePopupNote);
+        document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
         document.getElementById('applyDateFilterBtn').addEventListener('click', () => {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
@@ -982,6 +1123,7 @@
         window.switchMode = switchMode;
         window.activateMembership = activateMembership;
         window.deactivateMembership = deactivateMembership;
+        window.deleteCategory = deleteCategory;
     </script>
 </body>
 </html>
