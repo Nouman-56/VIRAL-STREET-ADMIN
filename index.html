@@ -23,9 +23,9 @@
         button { background: #e50914; border: none; color: white; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
         button:hover { opacity: 0.9; transform: scale(1.02); }
         .login-box { max-width: 400px; margin: 100px auto; text-align: center; }
-        .movie-list, .slider-list, .ad-links-list, .users-list, .categories-list { margin-top: 15px; max-height: 500px; overflow-y: auto; }
-        .movie-item, .slider-item, .ad-item, .user-item, .category-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #3d3d3d; gap: 15px; flex-wrap: wrap; background: #1a1a1a; margin-bottom: 5px; border-radius: 10px; }
-        .movie-item:hover, .slider-item:hover, .ad-item:hover, .user-item:hover, .category-item:hover { background: #222; }
+        .movie-list, .slider-list, .ad-links-list, .users-list, .categories-list, .blocked-users-list { margin-top: 15px; max-height: 500px; overflow-y: auto; }
+        .movie-item, .slider-item, .ad-item, .user-item, .category-item, .blocked-user-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #3d3d3d; gap: 15px; flex-wrap: wrap; background: #1a1a1a; margin-bottom: 5px; border-radius: 10px; }
+        .movie-item:hover, .slider-item:hover, .ad-item:hover, .user-item:hover, .category-item:hover, .blocked-user-item:hover { background: #222; }
         .movie-info { flex: 2; min-width: 200px; }
         .movie-info strong { color: #e50914; font-size: 16px; }
         .badges-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -210,6 +210,37 @@
         .admin-footer .copyright { color: #e50914; font-weight: 600; letter-spacing: 1px; }
         .admin-footer .rights { margin-top: 5px; font-size: 12px; }
         
+        /* Chat Styles in Admin */
+        .chat-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .chat-stat-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        .chat-stat-card .number {
+            font-size: 24px;
+            font-weight: 800;
+            color: #FFD700;
+        }
+        .chat-messages-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        .chat-message-item {
+            background: #1a1a1a;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 3px solid #e50914;
+        }
+        
         @media (max-width: 768px) { 
             .row { flex-direction: column; } 
             .movie-item { flex-direction: column; align-items: flex-start; }
@@ -313,7 +344,7 @@
                         <thead>
                             <tr><th>Date</th><th>Visitors</th><th>Page Views</th><th>Unique</th><th>Auth Views</th></tr>
                         </thead>
-                        <tbody id="statsTableBody"><tr><td colspan="5">Loading statistics...</td></tr></tbody>
+                        <tbody id="statsTableBody"><td><td colspan="5">Loading statistics...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -337,6 +368,43 @@
                 </div>
             </div>
             
+            <!-- ========== CHAT ROOM MANAGEMENT SECTION (NEW) ========== -->
+            <div class="admin-card">
+                <h3><i class="fas fa-comments"></i> 💬 Chat Room Management</h3>
+                <p style="color: #888; font-size: 12px; margin-bottom: 15px;">Manage chat messages and block/unblock users from chatting.</p>
+                
+                <div class="chat-stats">
+                    <div class="chat-stat-card">
+                        <div class="number" id="totalChatMessages">0</div>
+                        <div class="label">Total Messages</div>
+                    </div>
+                    <div class="chat-stat-card">
+                        <div class="number" id="totalChatUsers">0</div>
+                        <div class="label">Unique Chatters</div>
+                    </div>
+                    <div class="chat-stat-card">
+                        <div class="number" id="blockedUsersCount">0</div>
+                        <div class="label">Blocked Users</div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <input type="text" id="blockUsernameInput" placeholder="Enter username to block" style="flex: 2;">
+                    <button id="blockUserBtn" style="background: #e50914;">🚫 Block User</button>
+                </div>
+                
+                <div id="blockedUsersList" class="blocked-users-list" style="margin-top: 15px;">
+                    <h4 style="margin-bottom: 10px;">🚫 Blocked Users</h4>
+                    <div id="blockedUsersContainer"></div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h4>📝 Recent Chat Messages</h4>
+                    <div id="chatMessagesListAdmin" class="chat-messages-list"></div>
+                    <button id="refreshChatBtn" style="margin-top: 10px; background: #3498db;">🔄 Refresh Messages</button>
+                </div>
+            </div>
+            
             <!-- Manage Users Section -->
             <div class="admin-card">
                 <h3><i class="fas fa-users-gear"></i> 👥 Manage Users</h3>
@@ -348,7 +416,7 @@
                 <div id="usersList" class="users-list"></div>
             </div>
             
-            <!-- ========== CATEGORY MANAGEMENT SECTION (NEW) ========== -->
+            <!-- ========== CATEGORY MANAGEMENT SECTION ========== -->
             <div class="admin-card">
                 <h3><i class="fas fa-tags"></i> 🏷️ Manage Categories</h3>
                 <p style="color: #888; font-size: 12px; margin-bottom: 15px;">Add new categories to organize your videos. These will appear in frontend category bar.</p>
@@ -490,6 +558,8 @@
         let statsUnsubscribe = null;
         let usersUnsubscribe = null;
         let categoriesList = [];
+        let chatMessages = [];
+        let blockedUsers = [];
         
         // Default categories
         const defaultCategories = [
@@ -519,6 +589,136 @@
             } catch(e) { return 'N/A'; }
         }
         
+        // ========== CHAT MANAGEMENT FUNCTIONS ==========
+        async function loadChatMessages() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('chat_messages')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+                
+                if (error) throw error;
+                
+                chatMessages = data || [];
+                renderChatMessagesList();
+                updateChatStats();
+            } catch (error) {
+                console.error('Error loading chat messages:', error);
+            }
+        }
+        
+        async function loadBlockedUsers() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('blocked_users')
+                    .select('username');
+                
+                if (error) throw error;
+                
+                blockedUsers = data || [];
+                renderBlockedUsersList();
+                document.getElementById('blockedUsersCount').textContent = blockedUsers.length;
+            } catch (error) {
+                console.error('Error loading blocked users:', error);
+            }
+        }
+        
+        async function blockUser() {
+            const username = document.getElementById('blockUsernameInput').value.trim();
+            if (!username) {
+                showToast('Please enter a username to block!', true);
+                return;
+            }
+            
+            if (username === 'admin') {
+                showToast('Cannot block admin user!', true);
+                return;
+            }
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('blocked_users')
+                    .insert([{ username: username }]);
+                
+                if (error) throw error;
+                
+                showToast(`✅ User "${username}" has been blocked from chat!`);
+                document.getElementById('blockUsernameInput').value = '';
+                await loadBlockedUsers();
+                await loadChatMessages();
+            } catch (error) {
+                if (error.message.includes('duplicate')) {
+                    showToast(`User "${username}" is already blocked!`, true);
+                } else {
+                    showToast('Error blocking user: ' + error.message, true);
+                }
+            }
+        }
+        
+        async function unblockUser(username) {
+            if (!confirm(`Unblock user "${username}"?`)) return;
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('blocked_users')
+                    .delete()
+                    .eq('username', username);
+                
+                if (error) throw error;
+                
+                showToast(`✅ User "${username}" has been unblocked!`);
+                await loadBlockedUsers();
+                await loadChatMessages();
+            } catch (error) {
+                showToast('Error unblocking user: ' + error.message, true);
+            }
+        }
+        
+        function renderChatMessagesList() {
+            const container = document.getElementById('chatMessagesListAdmin');
+            if (!container) return;
+            
+            if (chatMessages.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No messages yet</div>';
+                return;
+            }
+            
+            container.innerHTML = chatMessages.map(msg => `
+                <div class="chat-message-item">
+                    <strong style="color: #e50914;">${escapeHtml(msg.username)}</strong>
+                    ${msg.is_premium ? '<span style="background: #FFD700; color: #000; padding: 2px 6px; border-radius: 12px; font-size: 10px; margin-left: 5px;">Premium</span>' : ''}
+                    <span style="color: #888; font-size: 11px; margin-left: 10px;">${msg.created_at ? new Date(msg.created_at).toLocaleString() : 'Just now'}</span>
+                    <div style="margin-top: 5px;">${escapeHtml(msg.message)}</div>
+                </div>
+            `).join('');
+        }
+        
+        function renderBlockedUsersList() {
+            const container = document.getElementById('blockedUsersContainer');
+            if (!container) return;
+            
+            if (blockedUsers.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No blocked users</div>';
+                return;
+            }
+            
+            container.innerHTML = blockedUsers.map(user => `
+                <div class="blocked-user-item">
+                    <div><strong style="color: #e50914;">${escapeHtml(user.username)}</strong></div>
+                    <div class="badges-group">
+                        <button class="delete-btn" onclick="unblockUser('${escapeHtml(user.username)}')">Unblock</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateChatStats() {
+            const uniqueUsers = [...new Set(chatMessages.map(m => m.username))];
+            document.getElementById('totalChatMessages').textContent = chatMessages.length;
+            document.getElementById('totalChatUsers').textContent = uniqueUsers.length;
+        }
+        
         // ========== CATEGORY MANAGEMENT (SUPABASE) ==========
         async function loadCategories() {
             try {
@@ -532,7 +732,6 @@
                 if (data && data.length > 0) {
                     categoriesList = data;
                 } else {
-                    // Insert default categories
                     for (const cat of defaultCategories) {
                         if (cat.id !== 'all') {
                             await supabaseClient.from('categories').insert([{ id: cat.id, name: cat.name, is_default: true }]);
@@ -559,10 +758,8 @@
                 return;
             }
             
-            // Generate ID from name (lowercase, remove special chars)
             const categoryId = categoryName.toLowerCase().replace(/[^a-z0-9]/g, '_');
             
-            // Check if category already exists
             if (categoriesList.some(c => c.id === categoryId || c.name === categoryName)) {
                 showToast('Category already exists!', true);
                 return;
@@ -583,14 +780,13 @@
         }
         
         async function deleteCategory(categoryId, categoryName) {
-            // Don't allow deleting default categories
             const category = categoriesList.find(c => c.id === categoryId);
             if (category && category.is_default) {
                 showToast('Cannot delete default categories!', true);
                 return;
             }
             
-            if (!confirm(`Delete category "${categoryName}"? Videos in this category will remain but category will be removed from options.`)) return;
+            if (!confirm(`Delete category "${categoryName}"?`)) return;
             
             const { error } = await supabaseClient
                 .from('categories')
@@ -630,13 +826,11 @@
         }
         
         function updateCategoryDropdowns() {
-            // Update Add Video category dropdown
             const newCatSelect = document.getElementById('newCategory');
             if (newCatSelect) {
                 newCatSelect.innerHTML = categoriesList.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
             }
             
-            // Update Edit Video category dropdown
             const editCatSelect = document.getElementById('editCategory');
             if (editCatSelect) {
                 editCatSelect.innerHTML = categoriesList.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
@@ -711,7 +905,7 @@
                 
                 renderStatsTable(statsData);
                 renderStatsChart(statsData);
-            }, (error) => console.error("Stats error:", error));
+            });
         }
         
         function setDateRange(range) {
@@ -772,7 +966,7 @@
                 snapshot.forEach(doc => allUsers.push({ id: doc.id, ...doc.data() }));
                 updateStats();
                 renderUsersList();
-            }, (error) => console.error("Users error:", error));
+            });
         }
         
         function updateStats() {
@@ -1055,7 +1249,7 @@
                 document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
                 document.getElementById('endDate').value = endDate;
                 
-                await Promise.all([loadCategories(), loadPopupNote(), loadAdLinks(), loadMembershipUrl(), loadVideosFromSupabase(), loadSlidersFromSupabase()]);
+                await Promise.all([loadCategories(), loadPopupNote(), loadAdLinks(), loadMembershipUrl(), loadVideosFromSupabase(), loadSlidersFromSupabase(), loadChatMessages(), loadBlockedUsers()]);
                 loadUsersRealtime();
                 loadStatsRealtime(startDate.toISOString().split('T')[0], endDate);
                 showToast('✅ Admin access granted! Session will persist on refresh.');
@@ -1077,7 +1271,7 @@
                 document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
                 document.getElementById('endDate').value = endDate;
                 
-                await Promise.all([loadCategories(), loadPopupNote(), loadAdLinks(), loadMembershipUrl(), loadVideosFromSupabase(), loadSlidersFromSupabase()]);
+                await Promise.all([loadCategories(), loadPopupNote(), loadAdLinks(), loadMembershipUrl(), loadVideosFromSupabase(), loadSlidersFromSupabase(), loadChatMessages(), loadBlockedUsers()]);
                 loadUsersRealtime();
                 loadStatsRealtime(startDate.toISOString().split('T')[0], endDate);
                 showToast('✅ Welcome back, Admin!');
@@ -1098,6 +1292,8 @@
         document.getElementById('savePopupNoteBtn').addEventListener('click', savePopupNote);
         document.getElementById('removePopupNoteBtn').addEventListener('click', removePopupNote);
         document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
+        document.getElementById('blockUserBtn').addEventListener('click', blockUser);
+        document.getElementById('refreshChatBtn').addEventListener('click', () => { loadChatMessages(); loadBlockedUsers(); });
         document.getElementById('applyDateFilterBtn').addEventListener('click', () => {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
@@ -1124,6 +1320,7 @@
         window.activateMembership = activateMembership;
         window.deactivateMembership = deactivateMembership;
         window.deleteCategory = deleteCategory;
+        window.unblockUser = unblockUser;
     </script>
 </body>
 </html>
